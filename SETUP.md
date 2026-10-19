@@ -6,12 +6,12 @@ What changed from the screening:
 
 - Individual registration: one person per form, no ticket quantity. Each attendee registers and pays ₱549 on their own.
 - First name and last name are separate fields. The form also asks Fanboy or Fangirl and the person's Facebook profile link (any format like facebook.com/jeizone is cleaned up to https://facebook.com/jeizone). The sheet also keeps a combined Full Legal Name column, which the emails, the printed list and the scanner use.
-- Fee is ₱549 per head. Capacity is 100 heads in total.
+- Fee is ₱549 per head. Capacity is 120 heads in total.
 - New Attendee Type column: Registrant (paid), Guest, Admin, Volunteer. The last three are free passes added from the team dashboard. They need no form and no payment, they get a QR code, and each takes one seat.
 - New team dashboard at `/dashboard/` with tabs for Overview, Registrants, Guests, Admin and Volunteers, plus a budget monitor.
 - New Sponsors list (Sponsors tab in the sheet and on the dashboard), with a starter list of SB19's brand partners. Sponsor cash received counts in the budget. Confirmed sponsors are thanked on the registration page.
 - The venue address and a Google Maps link are on the registration page and in the approval emails.
-- The admin seat reserve from the screening is gone. Free passes do that job now and come out of the same 100 seats.
+- The admin seat reserve from the screening is gone. Free passes do that job now and come out of the same 120 seats.
 - The reminder email scripts were left out. They were written for the screening. Ask if you want a birthday version.
 
 ## 1. Publish the site (GitHub Pages)
@@ -46,7 +46,7 @@ Later code changes: Deploy > Manage deployments > pencil > Version: New version 
 |---|---|---|
 | Registration Fee | 549 | What each paid registrant pays per head |
 | Venue Cost per Head | 495 | What Teaspoon Cafe charges for every person inside, paid or free |
-| Venue Capacity | 100 | Total heads: paid plus guests, admin and volunteers |
+| Venue Capacity | 120 | Total heads: paid plus guests, admin and volunteers |
 
 Change a number here and the dashboard, the seat count and the emails follow. If you change the fee, also change `PRICE_PER_TICKET` and the terms text in `assets/config.js`, since the public page shows it.
 
@@ -69,7 +69,7 @@ Every person inside costs the venue ₱495, paid or free. A paid registrant pays
 
 - One free pass costs ₱495, which takes 495 ÷ 54 = about 9.2 paid registrants to cover.
 - Paid heads needed = free passes × 495 ÷ 54, rounded up. 6 free passes need 55 paid heads. 10 need 92.
-- With 100 seats, the most free passes a full house can cover is 9. At 91 paid + 9 free the fees cover everything with ₱459 left. At 90 paid + 10 free you are ₱90 short.
+- With 120 seats, the most free passes a full house can cover is 11. At 109 paid + 11 free the fees cover everything with ₱441 left. At 108 paid + 12 free you are ₱108 short. Sponsor cash received raises that limit.
 
 The dashboard shows these numbers live, counting only verified payments, with a separate line for what happens if the pending ones go through. It turns red and says how many more paid heads you need whenever the free passes are not yet covered.
 

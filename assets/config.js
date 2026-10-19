@@ -19,7 +19,7 @@ const EVENT_CONFIG = {
   // Fallback shown before the live backend responds. The real figure comes
   // from ?action=slots and already subtracts the guest, admin and volunteer
   // free passes added from the team dashboard.
-  TOTAL_CAP: 100,
+  TOTAL_CAP: 120,
 
   // Individual registration: one person per form.
   MAX_TICKETS_PER_REGISTRATION: 1,

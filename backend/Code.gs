@@ -38,7 +38,7 @@
  *    surplus          = paid heads x 549 - (paid heads + free heads) x 495
  *    paid needed      = ceil(free heads x 495 / 54)
  *    max free passes a sold-out venue can cover
- *                     = floor(capacity x 54 / 549)   (9 at 100 seats)
+ *                     = floor(capacity x 54 / 549)   (11 at 120 seats)
  *  Fee, venue cost and capacity live in the "_Config" sheet, so a
  *  change from the venue is one cell edit, not a code change.
  *
@@ -58,7 +58,7 @@ const CONFIG = {
 
   // Fallback values only. The live values are read from the _Config sheet
   // (see getSetting_), so the team can change them without touching code.
-  VENUE_CAPACITY: 100,
+  VENUE_CAPACITY: 120,
   REGISTRATION_FEE: 549,
   VENUE_COST_PER_HEAD: 495,
 
