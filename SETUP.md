@@ -80,6 +80,6 @@ After the event, delete the "Josh Birthday - Check-in ID Photos" Drive folder on
 
 ## Things to confirm
 
-- Start time: 5:00 PM onwards. To change it, edit `EVENT_DATE_DISPLAY` in both `assets/config.js` and `backend/Code.gs` if that is wrong.
+- Start time: 5:00 PM onwards. To change it, edit `EVENT_DATE_DISPLAY` in both `assets/config.js` and `backend/Code.gs`.
 - GCash account: the same number and name as the screening. Change `PAYMENT_CHANNELS` in `assets/config.js` and replace `assets/gcash-qr.jpg` if a different account will receive payments.
 - Contact email: `sbfanboyjason@gmail.com`, in `backend/Code.gs` and the privacy notice in `assets/config.js`.
