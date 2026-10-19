@@ -1391,6 +1391,66 @@ function eventBox_() {
   );
 }
 
+/**
+ * Questions for the approval email. Keep in step with FAQ in the site's
+ * assets/config.js (the registration-only questions are left out here).
+ */
+function emailFaqHtml_(isFree, amount) {
+  const mapLink = '<a href="' + CONFIG.VENUE_MAP_URL + '" style="color:#ff6fae;">Open it in Google Maps</a>';
+  const items = [
+    [
+      'How do I get to Teaspoon Cafe?',
+      escapeHtml_(CONFIG.VENUE_ADDRESS) + '. ' + mapLink + '.<br><br>' +
+        '<strong>By train:</strong> take LRT-1 to R. Papa or Abad Santos Station. Both have tricycles and e-trikes outside; ' +
+        'ask for Juan Luna Street in Gagalangin. From R. Papa you can also walk, about 15 to 20 minutes.<br><br>' +
+        '<strong>By Grab, Joyride or Angkas:</strong> set your drop-off to "Teaspoon Cafe Juan Luna". ' +
+        'Give yourself extra time, since Saturday evening traffic around Tondo can be heavy.',
+    ],
+    [
+      'Is there parking?',
+      'Yes, parking is free, but slots are limited and first come, first served. If you can, commute or book a ride ' +
+        'so the slots go to those who really need them.',
+    ],
+    [
+      isFree ? 'What does my pass include?' : 'What does the ' + escapeHtml_(amount || 'registration fee') + ' include?',
+      'Your slot at the celebration, food at Teaspoon Cafe, freebies, and a night celebrating SSOB with fellow A\'TIN and BBQs.',
+    ],
+    [
+      'What do I bring?',
+      'This QR code (a screenshot works) and a valid ID with the same name as your registration.',
+    ],
+    isFree
+      ? [
+          'What if I can\'t make it?',
+          'This pass is for you only. Please tell the team as early as you can so someone else can use the slot.',
+        ]
+      : [
+          'Can I get a refund, or give my slot to someone else?',
+          'Registrations are non-refundable, but you can transfer your slot. Email us before the event with the full ' +
+            'name of the person taking your place. They will need a valid ID with that name.',
+        ],
+    [
+      'Who do I contact for questions?',
+      'Email <a href="mailto:' + CONFIG.ORGANIZER_CONTACT_EMAIL + '" style="color:#ff6fae;">' +
+        CONFIG.ORGANIZER_CONTACT_EMAIL + '</a> and include your Registration ID.',
+    ],
+  ];
+  return (
+    '<p><strong>Questions</strong></p>' +
+    '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 22px;">' +
+    items
+      .map(function (q) {
+        return (
+          '<tr><td style="padding:0 0 14px;font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:1.6;color:#ffe9f2;">' +
+          '<div style="font-weight:bold;color:#ff6fae;margin-bottom:3px;">' + q[0] + '</div>' +
+          '<div>' + q[1] + '</div></td></tr>'
+        );
+      })
+      .join('') +
+    '</table>'
+  );
+}
+
 /** Numbered list styled for the dark email body. */
 function stepsHtml_(items) {
   return (
@@ -1515,15 +1575,9 @@ function sendApprovalEmailWithQr(rowObj) {
       'Show this QR code at the door. A screenshot on your phone works.',
       'Bring a valid ID with the same name as above. We check every QR and ID at the entrance.',
       'Doors open at 5:00 PM. Coming early keeps the line short.',
-      'Getting there: take LRT-1 to R. Papa or Abad Santos Station, then a tricycle or e-trike to Juan Luna Street, Gagalangin. Parking is free but limited, so commuting or booking a ride is best.',
-      isFree
-        ? 'Your pass includes food and freebies.'
-        : 'Your ' + escapeHtml_(amount || 'registration') + ' covers your food and freebies.',
-      isFree
-        ? 'This pass is for you only. If you can\'t make it, please tell the team so someone else can use the slot.'
-        : 'Can\'t make it? Your slot is transferable. Email us before the event with the full name of the person taking your place.',
     ]) +
     eventBox_() +
+    emailFaqHtml_(isFree, amount) +
     '<p><strong>Terms &amp; Conditions</strong></p>' +
     '<div style="font-size:13px;line-height:1.6;">' +
     CONFIG.TERMS_SUMMARY_HTML +
