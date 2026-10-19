@@ -6,6 +6,7 @@
  *   Registrants   paid registrations (read-only here; status is managed in the sheet)
  *   Guests / Admin / Volunteers
  *                 free passes: add, remove, show QR, email QR (Admin role only)
+ *   Sponsors      sponsor and prospect list with status (backend/Sponsors.gs)
  */
 (function () {
   'use strict';
@@ -23,6 +24,9 @@
   var listCache = {}; // type -> rows
   var refreshTimer = null;
   var pendingRemove = null;
+  var sponsors = null; // { rows, totals, canEdit, options }
+  var spFilter = 'All';
+  var spEditing = null; // sponsor id being edited, or '' for new
 
   function $(id) { return document.getElementById(id); }
 
@@ -150,9 +154,13 @@
       b.setAttribute('aria-selected', on ? 'true' : 'false');
     });
     $('tab-overview').hidden = tab !== 'overview';
-    $('tab-list').hidden = tab === 'overview';
+    $('tab-sponsors').hidden = tab !== 'sponsors';
+    $('tab-list').hidden = tab === 'overview' || tab === 'sponsors';
     if (tab === 'overview') {
       loadOverview();
+    } else if (tab === 'sponsors') {
+      renderSponsors();
+      loadSponsors();
     } else {
       setupListView(tab);
       loadList(tab);
@@ -177,6 +185,7 @@
     $('countVolunteer').textContent = budget.free.Volunteer || '';
     var paid = budget.paidConfirmed + budget.paidPending;
     $('countRegistrant').textContent = paid || '';
+    if (budget.sponsorCount !== undefined) $('countSponsors').textContent = budget.sponsorCount || '';
   }
 
   function renderOverview(res) {
@@ -221,18 +230,28 @@
     // Money
     $('lnCollected').textContent = peso(b.collected);
     $('lnCollectedHow').textContent = b.paidConfirmed + ' paid × ' + peso(b.fee);
-    $('lnBill').textContent = peso(b.venueBill);
+    $('lnBill').textContent = '-' + peso(b.venueBill);
     $('lnBillHow').textContent = b.headcountConfirmed + ' heads × ' + peso(b.costPerHead);
+    $('lnSponsor').textContent = peso(b.sponsorCashReceived || 0);
+    $('lnSponsorHow').textContent = b.sponsorCashPledged ? peso(b.sponsorCashPledged) + ' more pledged' : 'from the Sponsors tab';
     var s = $('lnSurplus');
     s.textContent = peso(b.surplus);
     s.className = b.surplus < 0 ? 'neg' : 'pos';
     $('projection').textContent = b.paidPending
       ? 'If the ' + b.paidPending + ' pending ' + plural(b.paidPending, 'payment') + ' all get verified: ' + peso(b.surplusWithPending) + '.'
       : 'No payments waiting for verification.';
+    if (b.sponsorCashPledged) {
+      $('projection').textContent += ' Pledged sponsor cash (' + peso(b.sponsorCashPledged) + ') is not counted until it is marked received.';
+    }
 
     // Coverage
     $('cvFree').textContent = b.freeTotal;
     $('cvCost').textContent = peso(b.freeCost);
+    if (b.sponsorCashReceived) {
+      $('cvCost').parentNode.querySelector('.cover-lbl').innerHTML = '';
+      var lbl = $('cvCost').parentNode.querySelector('.cover-lbl');
+      lbl.appendChild(document.createTextNode('cost of ' + b.freeTotal + ' free passes; sponsors cover ' + peso(Math.min(b.freeCost, b.sponsorCashReceived))));
+    }
     $('cvNeeded').textContent = b.paidNeededToCover === null ? 'n/a' : b.paidNeededToCover;
     $('cvMore').textContent = b.morePaidNeeded === null ? 'n/a' : b.morePaidNeeded;
     $('cvAfford').textContent = b.freePassesAffordableNow;
@@ -459,7 +478,7 @@
     $('removeCancel').addEventListener('click', function () { $('removeModal').hidden = true; });
     $('removeModal').addEventListener('click', function (e) { if (e.target.id === 'removeModal') $('removeModal').hidden = true; });
     document.addEventListener('keydown', function (e) {
-      if (e.key === 'Escape') { $('qrModal').hidden = true; $('removeModal').hidden = true; }
+      if (e.key === 'Escape') { $('qrModal').hidden = true; $('removeModal').hidden = true; $('spModal').hidden = true; }
     });
     $('removeConfirm').addEventListener('click', function () {
       if (!pendingRemove) return;
@@ -481,11 +500,293 @@
     });
   }
 
+  // ---------- sponsors ----------
+  var SP_PILL = {
+    'Not contacted': 'pill-muted', Emailed: 'pill-pending', 'Followed up': 'pill-pending', Replied: 'pill-in',
+    Confirmed: 'pill-ok', Received: 'pill-ok', Declined: 'pill-bad', 'No reply': 'pill-muted',
+  };
+
+  function loadSponsors() {
+    if (!sponsors) $('spSummary').textContent = 'Loading…';
+    return dash('sponsors').then(function (res) {
+      if (!res.ok) { if (res.code !== 'AUTH') showError(res.error); return; }
+      showError('');
+      sponsors = res;
+      $('countSponsors').textContent = res.rows.length || '';
+      if (currentTab === 'sponsors') renderSponsors();
+    });
+  }
+
+  function renderSponsors() {
+    var admin = isAdmin();
+    $('spAdminActions').hidden = !admin;
+    $('spViewOnly').hidden = admin;
+    if (!sponsors) return;
+    var t = sponsors.totals;
+    $('spCash').textContent = peso(t.cashReceived);
+    $('spPledged').textContent = peso(t.cashPledged);
+    $('spItems').textContent = peso(t.itemValue);
+    $('spConfirmed').textContent = t.confirmed;
+    $('spTotal').textContent = t.total;
+
+    // Status filter chips with counts
+    var f = $('spFilter');
+    f.textContent = '';
+    ['All'].concat(sponsors.options.statuses).forEach(function (st) {
+      var n = st === 'All' ? sponsors.rows.length : (t.byStatus[st] || 0);
+      if (st !== 'All' && !n && st !== spFilter) return;
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'filter-chip' + (spFilter === st ? ' active' : '');
+      b.textContent = st + ' ' + n;
+      b.addEventListener('click', function () { spFilter = st; renderSponsors(); });
+      f.appendChild(b);
+    });
+
+    var q = $('spSearch').value.trim().toLowerCase();
+    var rows = sponsors.rows.filter(function (r) {
+      if (spFilter !== 'All' && r.status !== spFilter) return false;
+      if (!q) return true;
+      return [r.name, r.category, r.tieIn, r.notes, r.offerDetails, r.group, r.contactPerson || ''].join(' ').toLowerCase().indexOf(q) !== -1;
+    });
+    $('spSummary').textContent = rows.length + ' shown';
+    $('spEmpty').hidden = rows.length > 0;
+    $('spEmpty').textContent = sponsors.rows.length ? 'No sponsors match.' : (admin ? 'No sponsors yet. Tap "Load SB19 brand partners" to start with the researched list.' : 'No sponsors yet.');
+
+    var ul = $('spList');
+    ul.textContent = '';
+    rows.forEach(function (r) {
+      var li = document.createElement('li');
+      li.className = 'person' + (r.status === 'Declined' ? ' inactive' : '');
+
+      var name = document.createElement('div');
+      name.className = 'person-name';
+      name.textContent = r.name;
+
+      var pill;
+      if (admin) {
+        pill = document.createElement('select');
+        pill.className = 'sp-status-select';
+        pill.setAttribute('aria-label', 'Status of ' + r.name);
+        sponsors.options.statuses.forEach(function (st) {
+          var o = document.createElement('option');
+          o.textContent = st;
+          if (st === r.status) o.selected = true;
+          pill.appendChild(o);
+        });
+        pill.addEventListener('change', function () {
+          var newStatus = pill.value;
+          pill.disabled = true;
+          saveSponsor(r.id, { status: newStatus }).then(function (ok) {
+            pill.disabled = false;
+            if (!ok) pill.value = r.status;
+          });
+        });
+      } else {
+        pill = document.createElement('span');
+        pill.className = 'pill ' + (SP_PILL[r.status] || 'pill-muted');
+        pill.textContent = r.status;
+      }
+
+      var meta = document.createElement('div');
+      meta.className = 'person-meta';
+      var bits = [r.id];
+      if (r.category) bits.push(r.category);
+      if (r.group) bits.push(r.group);
+      if (r.lastContacted) bits.push('last contacted ' + r.lastContacted);
+      meta.textContent = bits.join(' · ');
+
+      li.appendChild(name);
+      li.appendChild(pill);
+      li.appendChild(meta);
+
+      if (r.tieIn) {
+        var tie = document.createElement('div');
+        tie.className = 'person-meta sp-tie';
+        tie.textContent = r.tieIn;
+        li.appendChild(tie);
+      }
+
+      var money = document.createElement('div');
+      money.className = 'sp-money';
+      var add = function (label, val) {
+        var sp = document.createElement('div');
+        var l = document.createElement('span');
+        l.textContent = label + ' ';
+        sp.appendChild(l);
+        sp.appendChild(document.createTextNode(val));
+        money.appendChild(sp);
+      };
+      if (r.offerType && r.offerType !== 'TBD') add('Offer', r.offerType + (r.offerDetails ? ': ' + r.offerDetails : ''));
+      if (r.cashPledged) add('Pledged', peso(r.cashPledged));
+      if (r.cashReceived) add('Received', peso(r.cashReceived));
+      if (r.itemValue) add('Items', peso(r.itemValue));
+      add('Pubmat', r.pubmat);
+      if (money.childNodes.length) li.appendChild(money);
+
+      var contactBits = [];
+      if (r.contactPerson) contactBits.push(r.contactPerson);
+      if (r.email) contactBits.push(r.email);
+      if (r.mobile) contactBits.push(r.mobile);
+      if (contactBits.length || r.website || r.source) {
+        var c = document.createElement('div');
+        c.className = 'person-meta sp-tie';
+        if (contactBits.length) c.appendChild(document.createTextNode(contactBits.join(' · ') + ' '));
+        [['site', r.website], ['source', r.source]].forEach(function (pair) {
+          if (!pair[1] || !/^https?:\/\//i.test(pair[1])) return;
+          var a = document.createElement('a');
+          a.href = pair[1];
+          a.target = '_blank';
+          a.rel = 'noopener';
+          a.textContent = pair[0];
+          c.appendChild(a);
+          c.appendChild(document.createTextNode(' '));
+        });
+        li.appendChild(c);
+      }
+      if (r.notes) {
+        var n = document.createElement('div');
+        n.className = 'person-meta sp-tie';
+        n.textContent = 'Notes: ' + r.notes;
+        li.appendChild(n);
+      }
+
+      if (admin) {
+        var actions = document.createElement('div');
+        actions.className = 'person-actions';
+        actions.appendChild(chip('Edit', '', function () { openSponsorEditor(r); }));
+        if (r.email) {
+          actions.appendChild(chip('Copy email', '', function () {
+            copyText(r.email).then(function () { toast('Copied ' + r.email); });
+          }));
+        }
+        li.appendChild(actions);
+      }
+      ul.appendChild(li);
+    });
+  }
+
+  function copyText(t) {
+    if (navigator.clipboard && navigator.clipboard.writeText) return navigator.clipboard.writeText(t);
+    var ta = document.createElement('textarea');
+    ta.value = t;
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); } catch (e) {}
+    document.body.removeChild(ta);
+    return Promise.resolve();
+  }
+
+  function fillSelect(id, values, current) {
+    var sel = $(id);
+    sel.textContent = '';
+    values.forEach(function (v) {
+      var o = document.createElement('option');
+      o.textContent = v;
+      if (v === current) o.selected = true;
+      sel.appendChild(o);
+    });
+  }
+
+  var SP_INPUTS = {
+    name: 'spName', status: 'spStatus', lastContacted: 'spLastContacted', category: 'spCategory', group: 'spGroup',
+    tieIn: 'spTieIn', contactPerson: 'spContact', email: 'spEmail', mobile: 'spMobile', website: 'spWebsite',
+    offerType: 'spOfferType', offerDetails: 'spOfferDetails', cashPledged: 'spCashPledged', cashReceived: 'spCashReceived',
+    itemValue: 'spItemValue', pubmat: 'spPubmat', showOnSite: 'spShow', logoUrl: 'spLogo', notes: 'spNotes',
+  };
+
+  function openSponsorEditor(r) {
+    if (!sponsors) return;
+    var o = sponsors.options;
+    r = r || {};
+    spEditing = r.id || '';
+    $('spModalTitle').textContent = r.id ? 'Edit ' + r.name : 'Add sponsor';
+    fillSelect('spStatus', o.statuses, r.status || 'Not contacted');
+    fillSelect('spGroup', [''].concat(o.groups), r.group || '');
+    fillSelect('spOfferType', o.offerTypes, r.offerType || 'TBD');
+    fillSelect('spPubmat', o.pubmat, r.pubmat || 'Not started');
+    $('spShow').value = r.showOnSite || 'Yes';
+    Object.keys(SP_INPUTS).forEach(function (f) {
+      var el = $(SP_INPUTS[f]);
+      if (el.tagName === 'SELECT') return;
+      var v = r[f];
+      if (f === 'cashPledged' || f === 'cashReceived' || f === 'itemValue') v = v ? String(v) : '';
+      el.value = v == null ? '' : v;
+    });
+    $('spError').textContent = '';
+    $('spModal').hidden = false;
+    setTimeout(function () { $('spName').focus(); }, 50);
+  }
+
+  function saveSponsor(id, fields) {
+    return dash('sponsorSave', { id: id || '', fields: fields }).then(function (res) {
+      if (!res.ok) {
+        if (res.code !== 'AUTH') {
+          if (!$('spModal').hidden) $('spError').textContent = res.error || 'Could not save.';
+          else toast(res.error || 'Could not save.');
+        }
+        return false;
+      }
+      budget = res.budget;
+      renderCounts();
+      if (sponsors) {
+        var found = false;
+        sponsors.rows = sponsors.rows.map(function (x) {
+          if (x.id === res.id) { found = true; return res.record; }
+          return x;
+        });
+        if (!found && res.record) sponsors.rows.push(res.record);
+        sponsors.totals = res.totals;
+      }
+      renderSponsors();
+      toast((res.record ? res.record.name : 'Sponsor') + ' saved');
+      return true;
+    });
+  }
+
+  function setupSponsors() {
+    $('spSearch').addEventListener('input', renderSponsors);
+    $('spAddBtn').addEventListener('click', function () { openSponsorEditor(null); });
+    $('spSeedBtn').addEventListener('click', function () {
+      var btn = $('spSeedBtn');
+      btn.disabled = true;
+      btn.textContent = 'Loading…';
+      dash('sponsorSeed').then(function (res) {
+        btn.disabled = false;
+        btn.textContent = 'Load SB19 brand partners';
+        if (!res.ok) { if (res.code !== 'AUTH') toast(res.error || 'Could not load.'); return; }
+        sponsors = res;
+        $('countSponsors').textContent = res.rows.length || '';
+        renderSponsors();
+        toast(res.added ? 'Added ' + res.added + ' brands' : 'All of them are already on the list');
+      });
+    });
+    var close = function () { $('spModal').hidden = true; };
+    $('spClose').addEventListener('click', close);
+    $('spCancel').addEventListener('click', close);
+    $('spModal').addEventListener('click', function (e) { if (e.target.id === 'spModal') close(); });
+    $('spForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+      var fields = {};
+      Object.keys(SP_INPUTS).forEach(function (f) { fields[f] = $(SP_INPUTS[f]).value.trim(); });
+      if (!fields.name) { $('spError').textContent = 'Name / brand is required.'; return; }
+      ['cashPledged', 'cashReceived', 'itemValue'].forEach(function (f) { if (fields[f] === '') fields[f] = '0'; });
+      if (!fields.lastContacted && spEditing) delete fields.lastContacted; // keep the stamped date
+      $('spSave').disabled = true;
+      saveSponsor(spEditing, fields).then(function (ok) {
+        $('spSave').disabled = false;
+        if (ok) close();
+      });
+    });
+  }
+
   // ---------- start ----------
   function refresh() {
     var btn = $('refreshBtn');
     btn.classList.add('spin');
-    var p = currentTab === 'overview' ? loadOverview() : Promise.all([loadOverview(), loadList(currentTab)]);
+    var p = currentTab === 'overview'
+      ? loadOverview()
+      : Promise.all([loadOverview(), currentTab === 'sponsors' ? loadSponsors() : loadList(currentTab)]);
     return p.then(function () { btn.classList.remove('spin'); }, function () { btn.classList.remove('spin'); });
   }
 
@@ -496,6 +797,7 @@
     selectTab('overview');
     // Warm the tab counts and lists in the background.
     TYPES.forEach(function (t) { loadList(t); });
+    loadSponsors();
     clearInterval(refreshTimer);
     refreshTimer = setInterval(function () {
       if (!session || document.hidden) return;
@@ -508,6 +810,7 @@
     setupTabs();
     setupAddForm();
     setupModals();
+    setupSponsors();
     $('refreshBtn').addEventListener('click', refresh);
     $('listSearch').addEventListener('input', renderList);
     $('showCancelled').addEventListener('change', renderList);

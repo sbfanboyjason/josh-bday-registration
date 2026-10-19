@@ -1,6 +1,6 @@
 # Setup: GAME TIME registration
 
-This is a copy of the Wakas at Simula block screening system, changed for SSOB's birthday celebration on Saturday, November 14, 2026 at Teaspoon Cafe. The screening site and its spreadsheet are not touched. This event gets its own spreadsheet, its own Apps Script deployment and its own GitHub Pages site.
+This is a copy of the Wakas at Simula block screening system, changed for SSOB's birthday celebration on Saturday, November 14, 2026, 5:00 PM onwards, at Teaspoon Cafe (5B & 6A Juan Luna Street, Gagalangin, Tondo, Manila 1013). The screening site and its spreadsheet are not touched. This event gets its own spreadsheet, its own Apps Script deployment and its own GitHub Pages site.
 
 What changed from the screening:
 
@@ -8,6 +8,8 @@ What changed from the screening:
 - Fee is ₱549 per head. Capacity is 100 heads in total.
 - New Attendee Type column: Registrant (paid), Guest, Admin, Volunteer. The last three are free passes added from the team dashboard. They need no form and no payment, they get a QR code, and each takes one seat.
 - New team dashboard at `/dashboard/` with tabs for Overview, Registrants, Guests, Admin and Volunteers, plus a budget monitor.
+- New Sponsors list (Sponsors tab in the sheet and on the dashboard), with a starter list of SB19's brand partners. Sponsor cash received counts in the budget. Confirmed sponsors are thanked on the registration page.
+- The venue address and a Google Maps link are on the registration page and in the approval emails.
 - The admin seat reserve from the screening is gone. Free passes do that job now and come out of the same 100 seats.
 - The reminder email scripts were left out. They were written for the screening. Ask if you want a birthday version.
 
@@ -22,16 +24,18 @@ What changed from the screening:
 1. Create a new Google Sheet, e.g. "GAME TIME Registrations", in the account that should send the emails.
 2. Extensions > Apps Script. Rename the project, e.g. "GAME TIME Backend".
 3. Replace the contents of `Code.gs` with `backend/Code.gs` from this repository.
-4. Add two more script files with the + next to Files > Script:
+4. Add three more script files with the + next to Files > Script:
    - `Checkin`, paste `backend/Checkin.gs`
    - `Dashboard`, paste `backend/Dashboard.gs`
+   - `Sponsors`, paste `backend/Sponsors.gs`
 5. Save (Ctrl+S). Go back to the sheet and reload it. A "Josh Birthday Admin" menu appears.
 6. Josh Birthday Admin > Initialize / Reset Sheet Structure. Approve the permissions prompt. This creates the Registrations, `_Config` and `_AuditLog` tabs.
 7. Josh Birthday Admin > Install Automated Triggers (run once).
 8. Josh Birthday Admin > Set Up Event Check-in. This creates the `_Staff` tab and shows each person's 6-digit PIN once. Screenshot it. Rename Team 1 to Team 4 in `_Staff` if you like, and set Role to Admin for anyone else who should add or remove free passes.
-9. Josh Birthday Admin > Build / Refresh Dashboard.
-10. Deploy > New deployment > type Web app. Execute as: Me. Who has access: Anyone. Deploy and copy the `/exec` URL.
-11. Paste that URL into `BACKEND_URL` in `assets/config.js` and push. The registration page, scanner and dashboard all read it from there.
+9. Josh Birthday Admin > Set Up Sponsors Sheet, then Load SB19 Brand Partners into Sponsors.
+10. Josh Birthday Admin > Build / Refresh Dashboard.
+11. Deploy > New deployment > type Web app. Execute as: Me. Who has access: Anyone. Deploy and copy the `/exec` URL.
+12. Paste that URL into `BACKEND_URL` in `assets/config.js` and push. The registration page, scanner and dashboard all read it from there.
 
 Later code changes: Deploy > Manage deployments > pencil > Version: New version > Deploy. Do not make a new deployment, because that changes the URL.
 
@@ -68,7 +72,34 @@ Every person inside costs the venue ₱495, paid or free. A paid registrant pays
 
 The dashboard shows these numbers live, counting only verified payments, with a separate line for what happens if the pending ones go through. It turns red and says how many more paid heads you need whenever the free passes are not yet covered.
 
-## 6. Rehearsal and event day
+## 6. Sponsors
+
+The Sponsors tab keeps one row per sponsor or prospect. The system sends nothing to sponsors. The team emails them one by one from sbfanboyjason@gmail.com and updates the status as they go.
+
+The starter list has 38 brands. Most are SB19 endorsements from news reports, plus everything on the partner logo wall the team shared. The Group column separates them:
+
+- SB19 partner 2026: current deals (REDMI/Xiaomi, Canva, Sony, Watsons, AIA)
+- SB19 partner 2024-2025 and SB19 past partner: earlier deals
+- SB19 partner (logo wall): on the logo wall, year not checked (TM, Datu Puti, Great Taste, NovoDental, Timezone, Fino, Bonchon, Bioderm)
+- Member partner: deals with one member (IKEA with Josh)
+- Music / industry partner: labels, publishers, agencies and the DOT. Kept for completeness, but they rarely sponsor fan events.
+
+Contact details are blank. Fill them in from each brand's official business or marketing contact as you find them.
+
+On the dashboard Sponsors tab, admins can change a status straight from the dropdown on each card, or tap Edit for the full record. Setting Emailed or Followed up stamps today's date in Last Contacted.
+
+Statuses: Not contacted, Emailed, Followed up, Replied, Confirmed, Received, Declined, No reply.
+
+Money:
+
+- Cash Received counts in the budget right away and pays for free passes before the ₱54 margins are needed. ₱3,000 in sponsor cash covers 6 free passes outright.
+- Cash Pledged shows separately and does not count until it is marked received.
+- Item Value is an estimate for products or freebies, shown for reference only.
+- Declined sponsors never count.
+
+What sponsors get: a shoutout pubmat and engagement, tracked in the Pubmat column (Not started, Drafted, Posted). Sponsors marked Confirmed or Received with Show on Site = Yes appear in a "Thank you to our sponsors" section at the bottom of the registration page. Paste an https logo link in Logo URL to show their logo instead of the name.
+
+## 7. Rehearsal and event day
 
 Same as the screening. Josh Birthday Admin > Create Check-in Test Tickets adds five test rows, including one free Guest pass, and shows their QR codes. Scan them with `/checkin/`, then run Remove Check-in Test Tickets before registration opens. Test rows hold seats until removed.
 

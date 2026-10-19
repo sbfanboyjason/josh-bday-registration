@@ -4,8 +4,9 @@
  * ============================================================
  *  Add this as a THIRD script file in the same Apps Script project
  *  (File > + > Script, name it "Dashboard"). It shares CONFIG, HEADERS,
- *  STATUS, ATTENDEE_TYPE, computeBudget_() etc. with Code.gs and the
- *  staff sign-in (PINs, sessions) with Checkin.gs.
+ *  STATUS, ATTENDEE_TYPE, computeBudget_() etc. with Code.gs, the
+ *  staff sign-in (PINs, sessions) with Checkin.gs, and the sponsor
+ *  list with Sponsors.gs.
  *
  *  Sign-in uses the same 6-digit PINs as the check-in scanner.
  *    - Every signed-in team member can VIEW the budget and the lists.
@@ -49,6 +50,12 @@ function handleDashboard_(e) {
         return jsonResponse(dashRemoveFree_(req, staff));
       case 'resendPass':
         return jsonResponse(dashResendPass_(req, staff));
+      case 'sponsors':
+        return jsonResponse(dashSponsorList_(staff)); // Sponsors.gs
+      case 'sponsorSave':
+        return jsonResponse(dashSponsorSave_(req, staff));
+      case 'sponsorSeed':
+        return jsonResponse(dashSponsorSeed_(staff));
       default:
         return jsonResponse({ ok: false, code: 'BAD_REQUEST', error: 'Unknown operation.' });
     }
@@ -72,7 +79,7 @@ function dashOverview_(staff) {
   return {
     ok: true,
     me: { name: staff.name, role: staff.role },
-    event: { name: CONFIG.EVENT_NAME, date: CONFIG.EVENT_DATE_DISPLAY, venue: CONFIG.VENUE },
+    event: { name: CONFIG.EVENT_NAME, date: CONFIG.EVENT_DATE_DISPLAY, venue: CONFIG.VENUE, address: CONFIG.VENUE_ADDRESS },
     budget: computeBudget_(d.data),
     generatedAt: Utilities.formatDate(new Date(), CHECKIN.TZ, 'MMM d, h:mm:ss a'),
   };

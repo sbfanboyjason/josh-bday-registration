@@ -9,6 +9,10 @@ const EVENT_CONFIG = {
   EVENT_TAGLINE: "The Never Growing Old SSOB's Birthday Celebration",
   EVENT_DATE_DISPLAY: 'Sat, November 14, 2026 · 5:00 PM onwards',
   VENUE: 'Teaspoon Cafe',
+  VENUE_ADDRESS: '5B & 6A Juan Luna Street, Gagalangin, Tondo, Manila 1013',
+  VENUE_MAP_URL:
+    'https://www.google.com/maps/search/?api=1&query=' +
+    encodeURIComponent('Teaspoon Cafe, 5B & 6A Juan Luna Street, Gagalangin, Tondo, Manila'),
   ORGANIZER_NOTE:
     "Fan-organized birthday celebration by SB19 A'tin Fanboys. Not an official SB19 or management event.",
 

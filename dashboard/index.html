@@ -46,6 +46,7 @@
     <button type="button" role="tab" class="tab" data-tab="Guest">Guests <span class="tab-count" id="countGuest"></span></button>
     <button type="button" role="tab" class="tab" data-tab="Admin">Admin <span class="tab-count" id="countAdmin"></span></button>
     <button type="button" role="tab" class="tab" data-tab="Volunteer">Volunteers <span class="tab-count" id="countVolunteer"></span></button>
+    <button type="button" role="tab" class="tab" data-tab="sponsors">Sponsors <span class="tab-count" id="countSponsors"></span></button>
   </nav>
 
   <main class="wrap">
@@ -90,6 +91,7 @@
           <tbody>
             <tr><th>Collected <span class="muted" id="lnCollectedHow"></span></th><td id="lnCollected"></td></tr>
             <tr><th>Venue bill <span class="muted" id="lnBillHow"></span></th><td id="lnBill"></td></tr>
+            <tr><th>Sponsor cash received <span class="muted" id="lnSponsorHow"></span></th><td id="lnSponsor"></td></tr>
             <tr class="total"><th>Surplus / shortfall</th><td id="lnSurplus"></td></tr>
           </tbody>
         </table>
@@ -120,6 +122,30 @@
       </div>
 
       <p class="muted small center" id="updatedAt"></p>
+    </section>
+
+    <!-- ===== SPONSORS ===== -->
+    <section id="tab-sponsors" class="tab-panel" hidden>
+      <div class="cover-grid sponsor-stats">
+        <div class="cover-cell"><span class="cover-num" id="spCash">₱0</span><span class="cover-lbl">cash received</span></div>
+        <div class="cover-cell"><span class="cover-num" id="spPledged">₱0</span><span class="cover-lbl">pledged, not yet received</span></div>
+        <div class="cover-cell"><span class="cover-num" id="spItems">₱0</span><span class="cover-lbl">est. value of items</span></div>
+        <div class="cover-cell"><span class="cover-num" id="spConfirmed">0</span><span class="cover-lbl">confirmed of <b id="spTotal">0</b> on the list</span></div>
+      </div>
+
+      <div class="sp-actions" id="spAdminActions" hidden>
+        <button type="button" class="btn btn-primary" id="spAddBtn">Add sponsor</button>
+        <button type="button" class="btn btn-ghost" id="spSeedBtn">Load SB19 brand partners</button>
+      </div>
+      <p class="muted small" id="spViewOnly" hidden>You can view this list. Only an Admin account can add or edit sponsors.</p>
+
+      <div class="status-filter" id="spFilter" role="group" aria-label="Filter by status"></div>
+      <div class="list-tools">
+        <input type="search" id="spSearch" placeholder="Search brand, category, notes" aria-label="Search sponsors" />
+      </div>
+      <p class="muted small" id="spSummary"></p>
+      <ul class="people" id="spList"></ul>
+      <p class="muted small center" id="spEmpty" hidden>No sponsors here yet.</p>
     </section>
 
     <!-- ===== LIST TABS (one template, filled per type) ===== -->
@@ -207,6 +233,55 @@
       <button type="button" class="btn btn-ghost" id="removeCancel">Keep</button>
       <button type="button" class="btn btn-danger" id="removeConfirm">Remove</button>
     </div>
+  </div>
+</div>
+
+<!-- ============ SPONSOR EDITOR ============ -->
+<div class="modal" id="spModal" hidden>
+  <div class="modal-card wide">
+    <button type="button" class="modal-close" id="spClose" aria-label="Close">×</button>
+    <h3 id="spModalTitle">Add sponsor</h3>
+    <form id="spForm" novalidate autocomplete="off">
+      <div class="field"><label for="spName">Name / brand</label><input id="spName" type="text" maxlength="120" required /></div>
+      <div class="row-2">
+        <div class="field"><label for="spStatus">Status</label><select id="spStatus"></select></div>
+        <div class="field"><label for="spLastContacted">Last contacted</label><input id="spLastContacted" type="date" /></div>
+      </div>
+      <div class="row-2">
+        <div class="field"><label for="spCategory">Category</label><input id="spCategory" type="text" maxlength="120" /></div>
+        <div class="field"><label for="spGroup">Group</label><select id="spGroup"></select></div>
+      </div>
+      <div class="field"><label for="spTieIn">SB19 tie-in</label><input id="spTieIn" type="text" maxlength="300" /></div>
+      <div class="row-2">
+        <div class="field"><label for="spContact">Contact person</label><input id="spContact" type="text" maxlength="120" /></div>
+        <div class="field"><label for="spEmail">Email</label><input id="spEmail" type="email" inputmode="email" /></div>
+      </div>
+      <div class="row-2">
+        <div class="field"><label for="spMobile">Mobile</label><input id="spMobile" type="tel" inputmode="tel" /></div>
+        <div class="field"><label for="spWebsite">Website / social</label><input id="spWebsite" type="text" maxlength="300" /></div>
+      </div>
+      <div class="row-2">
+        <div class="field"><label for="spOfferType">Offer type</label><select id="spOfferType"></select></div>
+        <div class="field"><label for="spOfferDetails">Offer details</label><input id="spOfferDetails" type="text" maxlength="300" /></div>
+      </div>
+      <div class="row-3">
+        <div class="field"><label for="spCashPledged">Cash pledged (₱)</label><input id="spCashPledged" type="text" inputmode="numeric" /></div>
+        <div class="field"><label for="spCashReceived">Cash received (₱)</label><input id="spCashReceived" type="text" inputmode="numeric" /></div>
+        <div class="field"><label for="spItemValue">Item value (₱)</label><input id="spItemValue" type="text" inputmode="numeric" /></div>
+      </div>
+      <div class="row-2">
+        <div class="field"><label for="spPubmat">Shoutout pubmat</label><select id="spPubmat"></select></div>
+        <div class="field"><label for="spShow">Show on registration page</label>
+          <select id="spShow"><option>Yes</option><option>No</option></select></div>
+      </div>
+      <div class="field"><label for="spLogo">Logo link <span class="muted">(https://, optional)</span></label><input id="spLogo" type="url" /></div>
+      <div class="field"><label for="spNotes">Notes</label><textarea id="spNotes" rows="3" maxlength="500"></textarea></div>
+      <p class="error-text" id="spError" role="alert"></p>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" id="spCancel">Cancel</button>
+        <button type="submit" class="btn btn-primary" id="spSave">Save</button>
+      </div>
+    </form>
   </div>
 </div>
 

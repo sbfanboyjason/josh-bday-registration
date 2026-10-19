@@ -16,6 +16,11 @@
     document.getElementById('eventTaglineMain').textContent = cfg.EVENT_TAGLINE;
     document.getElementById('metaDate').textContent = cfg.EVENT_DATE_DISPLAY;
     document.getElementById('metaVenue').textContent = cfg.VENUE;
+    const addr = document.getElementById('venueAddress');
+    if (addr && cfg.VENUE_ADDRESS) {
+      addr.textContent = cfg.VENUE_ADDRESS + ' · Open in Maps';
+      addr.href = cfg.VENUE_MAP_URL || '#';
+    }
     document.getElementById('organizerNote').textContent = cfg.ORGANIZER_NOTE;
     document.getElementById('dpaText').innerHTML = cfg.DPA_NOTICE_HTML;
     document.getElementById('termsText').innerHTML = cfg.TERMS_HTML;
@@ -421,6 +426,35 @@
     document.getElementById('ticketQuantity').addEventListener('input', updateAmountDue);
   }
 
+  // ---------- Sponsors strip ----------
+  // Only confirmed sponsors with "Show on Site" = Yes come back from the
+  // backend, and only their name and logo link. Hidden if there are none.
+  function loadSponsors() {
+    if (cfg.BACKEND_URL.indexOf('REPLACE_WITH') === 0) return;
+    fetch(cfg.BACKEND_URL + '?action=sponsors')
+      .then((r) => r.json())
+      .then((data) => {
+        if (!data.ok || !data.sponsors || !data.sponsors.length) return;
+        const list = document.getElementById('sponsorList');
+        data.sponsors.forEach(function (sp) {
+          const li = document.createElement('li');
+          if (sp.logoUrl) {
+            const img = document.createElement('img');
+            img.src = sp.logoUrl;
+            img.alt = sp.name;
+            img.loading = 'lazy';
+            img.onerror = function () { li.textContent = sp.name; };
+            li.appendChild(img);
+          } else {
+            li.textContent = sp.name;
+          }
+          list.appendChild(li);
+        });
+        document.getElementById('sponsorsStrip').hidden = false;
+      })
+      .catch(function () {});
+  }
+
   // ---------- Init ----------
   document.addEventListener('DOMContentLoaded', function () {
     populateEventInfo();
@@ -430,5 +464,6 @@
     setupUpload();
     setupConfirmModal();
     setupSubmit();
+    loadSponsors();
   });
 })();

@@ -5,7 +5,7 @@
  *  (Google Apps Script, attached to the registration spreadsheet)
  * ============================================================
  *  Date    : Saturday, November 14, 2026, 5:00 PM onwards
- *  Venue   : Teaspoon Cafe
+ *  Venue   : Teaspoon Cafe, 5B & 6A Juan Luna Street, Gagalangin, Tondo, Manila 1013
  *  Fan-organized by SB19 A'tin Fanboys
  *
  *  Built from the "Wakas at Simula" block screening system. The
@@ -51,6 +51,9 @@ const CONFIG = {
   EVENT_SUBTITLE: "The Never Growing Old SSOB's Birthday Celebration",
   EVENT_DATE_DISPLAY: 'Saturday, November 14, 2026, 5:00 PM onwards',
   VENUE: 'Teaspoon Cafe',
+  VENUE_ADDRESS: '5B & 6A Juan Luna Street, Gagalangin, Tondo, Manila 1013',
+  VENUE_MAP_URL: 'https://www.google.com/maps/search/?api=1&query=' +
+    encodeURIComponent('Teaspoon Cafe, 5B & 6A Juan Luna Street, Gagalangin, Tondo, Manila'),
   MENU_NAME: 'Josh Birthday Admin',
 
   // Fallback values only. The live values are read from the _Config sheet
@@ -315,6 +318,9 @@ function onOpen() {
     .addItem('Create Check-in Test Tickets', 'createCheckinTestTickets')
     .addItem('Remove Check-in Test Tickets', 'removeCheckinTestTickets')
     .addSeparator()
+    .addItem('Set Up Sponsors Sheet', 'setupSponsorsSheet')
+    .addItem('Load SB19 Brand Partners into Sponsors', 'loadSponsorSeed')
+    .addSeparator()
     .addItem('Run Backup Now', 'runBackupNow')
     .addToUi();
 }
@@ -355,11 +361,18 @@ function computeBudget_(data) {
   const fee = getSetting_('Registration Fee');
   const cost = getSetting_('Venue Cost per Head');
   const capacity = getSetting_('Venue Capacity');
-  return computeBudgetFrom_(data, fee, cost, capacity);
+  const sp = typeof sponsorTotals_ === 'function' ? sponsorTotals_() : { cashReceived: 0, cashPledged: 0, itemValue: 0, total: 0, confirmed: 0 };
+  const b = computeBudgetFrom_(data, fee, cost, capacity, sp.cashReceived);
+  b.sponsorCashPledged = sp.cashPledged;
+  b.sponsorItemValue = sp.itemValue;
+  b.sponsorCount = sp.total;
+  b.sponsorConfirmed = sp.confirmed;
+  return b;
 }
 
 /** Pure arithmetic, kept separate from Sheets so it can be tested on its own. */
-function computeBudgetFrom_(data, fee, cost, capacity) {
+function computeBudgetFrom_(data, fee, cost, capacity, sponsorCash) {
+  sponsorCash = Number(sponsorCash) || 0;
   const typeCol = HEADERS.indexOf('Attendee Type');
   const qtyCol = HEADERS.indexOf('Ticket Quantity');
   const statusCol = HEADERS.indexOf('Status');
@@ -400,25 +413,31 @@ function computeBudgetFrom_(data, fee, cost, capacity) {
   b.headcountWithPending = b.headcountConfirmed + b.paidPending;
   b.seatsLeft = Math.max(0, capacity - b.headcountWithPending);
 
+  // Sponsor cash that has actually been received counts as money in hand.
+  b.sponsorCashReceived = sponsorCash;
   b.collected = b.paidConfirmed * fee;
   b.venueBill = b.headcountConfirmed * cost;
-  b.surplus = b.collected - b.venueBill;
+  b.surplusFromFees = b.collected - b.venueBill;
+  b.surplus = b.surplusFromFees + sponsorCash;
 
   b.collectedWithPending = (b.paidConfirmed + b.paidPending) * fee;
   b.venueBillWithPending = b.headcountWithPending * cost;
-  b.surplusWithPending = b.collectedWithPending - b.venueBillWithPending;
+  b.surplusWithPending = b.collectedWithPending - b.venueBillWithPending + sponsorCash;
 
   b.freeCost = b.freeTotal * cost;
-  b.paidNeededToCover = m > 0 ? Math.ceil(b.freeCost / m) : null;
+  // Sponsor cash covers free passes first; paid margins cover the rest.
+  b.freeCostAfterSponsors = Math.max(0, b.freeCost - sponsorCash);
+  b.paidNeededToCover = m > 0 ? Math.ceil(b.freeCostAfterSponsors / m) : null;
   b.morePaidNeeded = b.paidNeededToCover === null ? null : Math.max(0, b.paidNeededToCover - b.paidConfirmed);
   b.morePaidNeededWithPending =
     b.paidNeededToCover === null ? null : Math.max(0, b.paidNeededToCover - b.paidConfirmed - b.paidPending);
   // Extra free passes the current confirmed surplus can already pay for.
   b.freePassesAffordableNow = b.surplus > 0 && cost > 0 ? Math.floor(b.surplus / cost) : 0;
-  // If every seat sells: free F, paid capacity - F, need (capacity - F) * m >= F * cost.
-  b.maxFreeIfSoldOut = fee > 0 && m > 0 ? Math.floor((capacity * m) / fee) : 0;
+  // If every seat sells: free F, paid capacity - F, need (capacity - F) * m + sponsors >= F * cost,
+  // which works out to F <= (capacity * m + sponsors) / fee.
+  b.maxFreeIfSoldOut = fee > 0 && m > 0 ? Math.min(capacity, Math.floor((capacity * m + sponsorCash) / fee)) : 0;
   // Can the remaining seats still cover the free passes if they all sell?
-  const bestCaseSurplus = (capacity - b.freeTotal) * m - b.freeTotal * cost;
+  const bestCaseSurplus = (capacity - b.freeTotal) * m - b.freeTotal * cost + sponsorCash;
   b.coverableIfSoldOut = bestCaseSurplus >= 0;
   b.covered = b.surplus >= 0;
   return b;
@@ -452,6 +471,10 @@ function doGet(e) {
 
   if (action === 'lookup') {
     return handleLookup(e.parameter.regId, e.parameter.email);
+  }
+
+  if (action === 'sponsors') {
+    return jsonResponse(publicSponsors_()); // see Sponsors.gs
   }
 
   return jsonResponse({ ok: false, error: 'Unknown action.' });
@@ -1291,6 +1314,7 @@ function buildEmailShell_(options) {
     escapeHtml_(CONFIG.EVENT_DATE_DISPLAY) +
     '</strong> — ' +
     escapeHtml_(CONFIG.VENUE) +
+    '<br>' + escapeHtml_(CONFIG.VENUE_ADDRESS) +
     '<br>Questions? Email <a href="mailto:' +
     CONFIG.ORGANIZER_CONTACT_EMAIL +
     '" style="color:#ff6fae;">' +
@@ -1396,7 +1420,8 @@ function sendApprovalEmailWithQr(rowObj) {
     (isFree ? infoRow_('Pass', '<strong>' + escapeHtml_(type) + ' (complimentary)</strong>') : '') +
     infoRow_('Event', escapeHtml_(CONFIG.EVENT_NAME)) +
     infoRow_('When', '<strong>' + escapeHtml_(CONFIG.EVENT_DATE_DISPLAY) + '</strong>') +
-    infoRow_('Where', '<strong>' + escapeHtml_(CONFIG.VENUE) + '</strong>');
+    infoRow_('Where', '<strong>' + escapeHtml_(CONFIG.VENUE) + '</strong><br>' + escapeHtml_(CONFIG.VENUE_ADDRESS) +
+      '<br><a href="' + CONFIG.VENUE_MAP_URL + '" style="color:#ff6fae;">Open in Google Maps</a>');
 
   const qrSection = qrBlob
     ? '<div style="text-align:center;background-color:#ffffff;border-radius:10px;padding:20px;margin:0 0 22px;">' +
@@ -1682,6 +1707,16 @@ function buildDashboard() {
   const HEAD = '(' + PAID_OK + '+' + FREE + ')';
   const MARGIN = '(' + FEE + '-' + COST + ')';
 
+  if (!ss.getSheetByName(SPONSORS.SHEET_NAME)) setupSponsorsSheet();
+  const SP = "'" + SPONSORS.SHEET_NAME + "'!";
+  const spCol = function (h) {
+    const n = SPONSORS.HEADERS.indexOf(h) + 1;
+    const L = n <= 26 ? String.fromCharCode(64 + n) : 'A' + String.fromCharCode(64 + n - 26);
+    return SP + L + '2:' + L;
+  };
+  const SP_CASH = 'SUMIFS(' + spCol('Cash Received') + ',' + spCol('Status') + ',"<>Declined")';
+  const SP_PLEDGED = 'MAX(0,SUMIFS(' + spCol('Cash Pledged') + ',' + spCol('Status') + ',"<>Declined")-' + SP_CASH + ')';
+
   sheet.getRange(1, 1, 80, 12).setBackground(DARK).setFontColor(BLUSH);
   for (let c = 1; c <= 10; c++) sheet.setColumnWidth(c, 110);
   sheet.setColumnWidth(11, 30);
@@ -1739,13 +1774,15 @@ function buildDashboard() {
     ['Margin left by each paid head', '=' + MARGIN, peso],
     ['Collected (verified paid heads x fee)', '=' + PAID_OK + '*' + FEE, peso],
     ['Venue bill (everyone inside x cost per head)', '=' + HEAD + '*' + COST, peso],
-    ['SURPLUS / SHORTFALL right now', '=' + PAID_OK + '*' + FEE + '-' + HEAD + '*' + COST, peso],
+    ['Sponsor cash received (Sponsors tab)', '=' + SP_CASH, peso],
+    ['SURPLUS / SHORTFALL right now', '=' + PAID_OK + '*' + FEE + '-' + HEAD + '*' + COST + '+' + SP_CASH, peso],
+    ['Sponsor cash pledged, not yet received', '=' + SP_PLEDGED, peso],
     ['Cost of free passes (free heads x cost per head)', '=' + FREE + '*' + COST, peso],
-    ['Paid heads needed to cover all free passes', '=IF(' + MARGIN + '<=0,"n/a",CEILING(' + FREE + '*' + COST + '/' + MARGIN + ',1))', '0'],
-    ['More paid heads still needed (verified)', '=IF(' + MARGIN + '<=0,"n/a",MAX(0,CEILING(' + FREE + '*' + COST + '/' + MARGIN + ',1)-' + PAID_OK + '))', '0'],
-    ['More paid heads still needed (if all pending get verified)', '=IF(' + MARGIN + '<=0,"n/a",MAX(0,CEILING(' + FREE + '*' + COST + '/' + MARGIN + ',1)-' + PAID_OK + '-' + PAID_PEND + '))', '0'],
-    ['Extra free passes the current surplus can already pay for', '=MAX(0,FLOOR((' + PAID_OK + '*' + FEE + '-' + HEAD + '*' + COST + ')/' + COST + ',1))', '0'],
-    ['Most free passes a SOLD-OUT venue can cover', '=IF(' + MARGIN + '<=0,0,FLOOR(' + CAP + '*' + MARGIN + '/' + FEE + ',1))', '0'],
+    ['Paid heads needed to cover free passes (after sponsor cash)', '=IF(' + MARGIN + '<=0,"n/a",CEILING(MAX(0,' + FREE + '*' + COST + '-' + SP_CASH + ')/' + MARGIN + ',1))', '0'],
+    ['More paid heads still needed (verified)', '=IF(' + MARGIN + '<=0,"n/a",MAX(0,CEILING(MAX(0,' + FREE + '*' + COST + '-' + SP_CASH + ')/' + MARGIN + ',1)-' + PAID_OK + '))', '0'],
+    ['More paid heads still needed (if all pending get verified)', '=IF(' + MARGIN + '<=0,"n/a",MAX(0,CEILING(MAX(0,' + FREE + '*' + COST + '-' + SP_CASH + ')/' + MARGIN + ',1)-' + PAID_OK + '-' + PAID_PEND + '))', '0'],
+    ['Extra free passes the current surplus can already pay for', '=MAX(0,FLOOR((' + PAID_OK + '*' + FEE + '-' + HEAD + '*' + COST + '+' + SP_CASH + ')/' + COST + ',1))', '0'],
+    ['Most free passes a SOLD-OUT venue can cover', '=IF(' + MARGIN + '<=0,0,FLOOR((' + CAP + '*' + MARGIN + '+' + SP_CASH + ')/' + FEE + ',1))', '0'],
   ];
   lines.forEach(function (l, i) {
     const r = 12 + i;
@@ -1753,7 +1790,7 @@ function buildDashboard() {
     sheet.getRange(r, 7, 1, 3).merge().setFormula(l[1]).setNumberFormat(l[2])
       .setFontColor(PINK).setFontSize(12).setFontWeight('bold').setHorizontalAlignment('right');
   });
-  const surplusCell = sheet.getRange(17, 7, 1, 3);
+  const surplusCell = sheet.getRange(18, 7, 1, 3);
   surplusCell.setFontSize(16);
   sheet.setConditionalFormatRules([
     SpreadsheetApp.newConditionalFormatRule().whenNumberLessThan(0)
