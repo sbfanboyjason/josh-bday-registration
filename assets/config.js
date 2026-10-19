@@ -26,7 +26,7 @@ const EVENT_CONFIG = {
 
   PRICE_PER_TICKET: 549,
   CURRENCY: '₱',
-  TICKET_INCLUSIONS_NOTE: 'Per head. Includes food, BBQ and freebies.',
+  TICKET_INCLUSIONS_NOTE: 'Per head. Includes food and freebies.',
 
   // Paste the /exec URL of the NEW Apps Script deployment here (see SETUP.md).
   BACKEND_URL: 'REPLACE_WITH_YOUR_APPS_SCRIPT_EXEC_URL',
@@ -64,7 +64,7 @@ const EVENT_CONFIG = {
     ],
     [
       'What does the ₱549 include?',
-      '<p>Your slot at the celebration, food at Teaspoon Cafe, BBQ, freebies, and a night with fellow A\'TIN celebrating SSOB.</p>',
+      '<p>Your slot at the celebration, food at Teaspoon Cafe, freebies, and a night celebrating SSOB with fellow A\'TIN and BBQs.</p>',
     ],
     [
       'Can I register for my friends too?',
@@ -118,7 +118,7 @@ const EVENT_CONFIG = {
   TERMS_HTML: `
     <p><strong>Terms & Conditions</strong></p>
     <ul>
-      <li>The registration fee is <strong>₱549 per head</strong> and includes your food, BBQ and freebies at the venue.</li>
+      <li>The registration fee is <strong>₱549 per head</strong> and includes your food and freebies at the venue.</li>
       <li>All registrations are <strong>non-refundable</strong>, but <strong>transferable</strong> to
       another person, provided the original registrant informs the organizers before the event.</li>
       <li>Registration is only confirmed once payment has been manually verified by the organizers. Until

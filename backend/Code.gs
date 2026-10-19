@@ -88,7 +88,7 @@ const CONFIG = {
     '<ul>' +
     '<li>Your registration is <strong>non-refundable but transferable</strong>. Tell us in advance if someone else will use it.</li>' +
     '<li>Bring your entry QR code and a valid ID matching the registered name (or the name of the person it was transferred to).</li>' +
-    '<li>Your registration includes food, BBQ and freebies at the venue.</li>' +
+    '<li>Your registration includes food and freebies at the venue.</li>' +
     '<li>This is an independently organized fan celebration, not an official SB19 or management event.</li>' +
     '</ul>',
 };
@@ -1517,8 +1517,8 @@ function sendApprovalEmailWithQr(rowObj) {
       'Doors open at 5:00 PM. Coming early keeps the line short.',
       'Getting there: take LRT-1 to R. Papa or Abad Santos Station, then a tricycle or e-trike to Juan Luna Street, Gagalangin. Parking is free but limited, so commuting or booking a ride is best.',
       isFree
-        ? 'Your pass includes food, BBQ and freebies.'
-        : 'Your ' + escapeHtml_(amount || 'registration') + ' covers your food, BBQ and freebies.',
+        ? 'Your pass includes food and freebies.'
+        : 'Your ' + escapeHtml_(amount || 'registration') + ' covers your food and freebies.',
       isFree
         ? 'This pass is for you only. If you can\'t make it, please tell the team so someone else can use the slot.'
         : 'Can\'t make it? Your slot is transferable. Email us before the event with the full name of the person taking your place.',
@@ -1528,7 +1528,7 @@ function sendApprovalEmailWithQr(rowObj) {
     '<div style="font-size:13px;line-height:1.6;">' +
     CONFIG.TERMS_SUMMARY_HTML +
     '</div>' +
-    '<p>See you there, A\'TIN!</p>';
+    '<p>See you there, A\'TIN and BBQs!</p>';
 
   const shell = buildEmailShell_({
     pillLabel: isFree ? type + ' Pass ✓' : 'Approved ✓',

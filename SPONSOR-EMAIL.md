@@ -15,7 +15,7 @@ EVENT DETAILS
 Event: GAME TIME: The Never Growing Old SSOB's Birthday Celebration
 Date: Saturday, November 14, 2026, 5:00 PM onwards
 Venue: Teaspoon Cafe, 5B & 6A Juan Luna Street, Gagalangin, Tondo, Manila
-Attendees: 125 A'TIN, fanboys and fangirls
+Attendees: 125 A'TIN and BBQs, fanboys and fangirls
 Organizer: SB19 A'tin Fanboys
 
 Our guests are A'TIN fan accounts with big followings who share fan events with their audiences:
