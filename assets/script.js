@@ -69,7 +69,13 @@
         if (!data.ok) throw new Error(data.error || 'Could not load ticket availability.');
         remainingSlots = data.remaining;
         countEl.textContent = `${data.remaining} / ${data.totalCap} slots left`;
-        if (data.remaining <= 0) {
+        if (data.open === false) {
+          banner.classList.add('sold-out');
+          countEl.textContent = 'Registration is closed';
+          hintEl.textContent = 'Thank you for your support. For questions, email ' + 'sbfanboyjason@gmail.com.';
+          document.getElementById('submitBtn').disabled = true;
+          remainingSlots = 0;
+        } else if (data.remaining <= 0) {
           banner.classList.add('sold-out');
           hintEl.textContent = 'All slots have been claimed. Registration is closed.';
           document.getElementById('submitBtn').disabled = true;

@@ -68,6 +68,13 @@ const CONFIG = {
 
   CORRECTION_WINDOW_HOURS: 24,
 
+  // Gmail limits how many emails a script may send per day (about 100 on a
+  // free Gmail account). "Received" emails stop once fewer than this many
+  // are left, so the QR emails (which people need at the door) still go out.
+  QUOTA_RESERVE_FOR_QR: 20,
+  // QR emails sent per minute by the background sender.
+  QR_EMAILS_PER_RUN: 15,
+
   SHEET_NAME: 'Registrations',
   CONFIG_SHEET_NAME: '_Config',
   DRIVE_FOLDER_NAME: 'Josh Birthday - Payment Screenshots',
@@ -217,6 +224,34 @@ function getSetting_(key) {
   return def;
 }
 
+/**
+ * Yes/No switches in _Config, below the numeric settings. Kept separate so
+ * the numeric rows (and the dashboard formulas that point at them) never move.
+ */
+const SWITCHES = [
+  ['Registration Open', 'Yes', 'Type No to close the public form right away (people see "Registration is closed"). Yes to reopen.'],
+];
+
+function getSwitch_(key) {
+  const def = (SWITCHES.filter(function (r) { return r[0] === key; })[0] || [key, 'Yes'])[1];
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(CONFIG.CONFIG_SHEET_NAME);
+  if (!sheet) return def === 'Yes';
+  const data = sheet.getDataRange().getValues();
+  for (let i = 1; i < data.length; i++) {
+    if (String(data[i][0]).trim() === key) {
+      const v = String(data[i][1]).trim().toLowerCase();
+      if (v === 'no' || v === 'false' || v === '0' || v === 'closed') return false;
+      if (v === 'yes' || v === 'true' || v === '1' || v === 'open') return true;
+    }
+  }
+  return def === 'Yes';
+}
+
+/** True for the rehearsal rows made by "Create Check-in Test Tickets". */
+function isTestRow_(regId) {
+  return String(regId || '').toUpperCase().indexOf('TEST-') === 0;
+}
+
 /** _Config cell (e.g. "_Config!B2") holding a setting, for sheet formulas. */
 function settingCell_(key) {
   const idx = SETTINGS.map(function (r) { return r[0]; }).indexOf(key);
@@ -284,10 +319,17 @@ function initializeSheet() {
   let configSheet = ss.getSheetByName(CONFIG.CONFIG_SHEET_NAME);
   if (!configSheet) configSheet = ss.insertSheet(CONFIG.CONFIG_SHEET_NAME);
   const current = SETTINGS.map(function (r) { return getSetting_(r[0]); });
+  const currentSwitches = SWITCHES.map(function (r) { return getSwitch_(r[0]) ? 'Yes' : 'No'; });
   configSheet.clear();
   configSheet.getRange(1, 1, 1, 3).setValues([['Key', 'Value', 'Notes']]).setFontWeight('bold');
   configSheet.getRange(2, 1, SETTINGS.length, 3).setValues(
     SETTINGS.map(function (r, i) { return [r[0], current[i], r[2]]; })
+  );
+  configSheet.getRange(2 + SETTINGS.length, 1, SWITCHES.length, 3).setValues(
+    SWITCHES.map(function (r, i) { return [r[0], currentSwitches[i], r[2]]; })
+  );
+  configSheet.getRange(2 + SETTINGS.length, 2, SWITCHES.length, 1).setDataValidation(
+    SpreadsheetApp.newDataValidation().requireValueInList(['Yes', 'No'], true).setAllowInvalid(false).build()
   );
   configSheet.autoResizeColumns(1, 3);
 
@@ -342,6 +384,7 @@ function onOpen() {
     .addItem('Install Automated Triggers (run once)', 'installTriggers')
     .addItem('Build / Refresh Dashboard', 'buildDashboard')
     .addItem('Print Attendee List (Approved + Free Passes)', 'showAttendeeListDialog')
+    .addItem('Send Waiting QR Emails Now', 'sendQrEmailsNow')
     .addSeparator()
     .addItem('Set Up Event Check-in (staff PINs)', 'setupCheckin')
     .addItem('Reset a Check-in PIN', 'resetCheckinPin')
@@ -423,7 +466,9 @@ function computeBudgetFrom_(data, fee, cost, capacity, sponsorCash) {
 
   for (let i = 1; i < data.length; i++) {
     const row = data[i];
-    if (!row[HEADERS.indexOf('Registration ID')]) continue;
+    const rowId = row[HEADERS.indexOf('Registration ID')];
+    if (!rowId) continue;
+    if (isTestRow_(rowId)) continue; // rehearsal rows never count as money or heads
     const type = String(row[typeCol] || ATTENDEE_TYPE.REGISTRANT);
     const status = row[statusCol];
     const qty = Number(row[qtyCol]) || 0;
@@ -497,6 +542,7 @@ function doGet(e) {
     const claimed = getClaimedTicketCount(sheet);
     return jsonResponse({
       ok: true,
+      open: getSwitch_('Registration Open'),
       totalCap: cap,
       claimed: claimed,
       remaining: Math.max(0, cap - claimed),
@@ -554,10 +600,25 @@ function handleNewRegistration(e) {
       return jsonResponse({ ok: false, error: validationError });
     }
 
+    if (!getSwitch_('Registration Open')) {
+      return jsonResponse({ ok: false, error: 'Registration is closed. For questions, email ' + CONFIG.ORGANIZER_CONTACT_EMAIL + '.' });
+    }
+
     const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(CONFIG.SHEET_NAME);
     const cap = getVenueCapacity();
     const claimed = getClaimedTicketCount(sheet);
     const requestedQty = 1; // individual registration
+
+    // Same person registering twice (often a retry after a slow connection).
+    const dupe = findActiveDuplicate_(sheet, payload);
+    if (dupe.sameName) {
+      return jsonResponse({
+        ok: false,
+        error:
+          'You are already registered (' + dupe.sameName + '). Please do not pay again. Check your email for your ' +
+          'registration details, or email ' + CONFIG.ORGANIZER_CONTACT_EMAIL + ' if this is a mistake.',
+      });
+    }
 
     if (claimed + requestedQty > cap) {
       const remaining = Math.max(0, cap - claimed);
@@ -579,7 +640,10 @@ function handleNewRegistration(e) {
     payload.firstName = firstName;
 
     let screenshotUrl = '';
-    let adminNote = '';
+    const notes = [];
+    if (dupe.sameRef) notes.push('CHECK: same GCash reference as ' + dupe.sameRef + ' (one payment for two people?).');
+    if (dupe.sameEmail) notes.push('Note: same email as ' + dupe.sameEmail + '.');
+    let adminNote = notes.join(' ');
     try {
       screenshotUrl = saveScreenshotToDrive(
         payload.paymentScreenshotBase64,
@@ -587,7 +651,7 @@ function handleNewRegistration(e) {
         regId
       );
     } catch (err) {
-      adminNote = 'Screenshot upload failed server-side — ask registrant to resend proof.';
+      adminNote = (adminNote ? adminNote + ' ' : '') + 'Screenshot upload failed server-side — ask registrant to resend proof.';
     }
 
     sheet.appendRow([
@@ -615,10 +679,25 @@ function handleNewRegistration(e) {
       now,
     ]);
 
+    // The "we got it" email is nice to have; the QR email is essential. When
+    // the daily Gmail quota is nearly used up, keep the rest for QR emails.
+    let emailNote = '';
     try {
-      sendPendingConfirmationEmail(payload, regId);
+      if (mailQuotaLeft_() > CONFIG.QUOTA_RESERVE_FOR_QR) {
+        sendPendingConfirmationEmail(payload, regId);
+      } else {
+        emailNote = 'Received email skipped (daily email limit nearly used; saved for QR emails).';
+      }
     } catch (err) {
-      // Row is already saved; don't fail the registration over a bounced email.
+      emailNote = 'Received email not sent: ' + err.message;
+    }
+    if (emailNote) {
+      const r = sheet.getLastRow();
+      const c = HEADERS.indexOf('Admin Notes') + 1;
+      const prev = sheet.getRange(r, c).getValue();
+      if (sheet.getRange(r, HEADERS.indexOf('Registration ID') + 1).getValue() === regId) {
+        sheet.getRange(r, c).setValue(sanitizeForSheet_(prev ? prev + ' ' + emailNote : emailNote));
+      }
     }
 
     return jsonResponse({ ok: true, registrationId: regId });
@@ -730,6 +809,44 @@ function handleCorrection(e) {
     return jsonResponse({ ok: false, error: 'Server error: ' + err.message });
   } finally {
     lock.releaseLock();
+  }
+}
+
+/**
+ * Looks for an active paid registration that matches this submission.
+ *   sameName  -> same first + last name (blocked: real duplicate)
+ *   sameEmail -> same email, different name (allowed, noted)
+ *   sameRef   -> same GCash reference (allowed, flagged for checking)
+ */
+function findActiveDuplicate_(sheet, payload) {
+  const data = sheet.getDataRange().getValues();
+  const c = function (h) { return HEADERS.indexOf(h); };
+  const name = joinName_(payload.firstName, payload.lastName).toLowerCase();
+  const email = String(payload.email || '').trim().toLowerCase();
+  const ref = String(payload.paymentReference || '').replace(/\s+/g, '').toLowerCase();
+  const out = { sameName: '', sameEmail: '', sameRef: '' };
+  for (let i = 1; i < data.length; i++) {
+    const r = data[i];
+    if (HOLDING_STATUSES.indexOf(r[c('Status')]) === -1) continue;
+    if (String(r[c('Attendee Type')] || ATTENDEE_TYPE.REGISTRANT) !== ATTENDEE_TYPE.REGISTRANT) continue;
+    if (isTestRow_(r[c('Registration ID')])) continue;
+    const id = r[c('Registration ID')];
+    const rName = String(r[c('Full Legal Name')] || '').replace(/^'/, '').trim().toLowerCase();
+    const rEmail = String(r[c('Email Address')] || '').trim().toLowerCase();
+    const rRef = String(r[c('Payment Reference No.')] || '').replace(/^'/, '').replace(/\s+/g, '').toLowerCase();
+    if (name && rName === name) out.sameName = out.sameName || id;
+    else if (email && rEmail === email) out.sameEmail = out.sameEmail || id;
+    if (ref && ref.length >= 6 && rRef === ref) out.sameRef = out.sameRef || id;
+  }
+  return out;
+}
+
+/** Emails left today for this account; a large number if the call is not allowed. */
+function mailQuotaLeft_() {
+  try {
+    return MailApp.getRemainingDailyQuota();
+  } catch (err) {
+    return 9999;
   }
 }
 
@@ -914,11 +1031,31 @@ function onEdit(e) {
     const statusCol = HEADERS.indexOf('Status') + 1;
     const lastUpdatedCol = HEADERS.indexOf('Last Updated') + 1;
     const isSingleCell = e.range.getNumRows() === 1 && e.range.getNumColumns() === 1;
-    const isStatusEdit = isSingleCell && e.range.getColumn() === statusCol;
+    const touchesStatus =
+      e.range.getColumn() <= statusCol && e.range.getColumn() + e.range.getNumColumns() - 1 >= statusCol;
 
-    if (!isStatusEdit) {
-      // Any other edit (including a multi-cell paste or a bulk delete) —
-      // just log it quietly and stamp Last Updated for every touched row.
+    // Paste, fill-down or bulk edit that includes the Status column. There is
+    // no old value to revert to, so there is no popup: approvals are picked
+    // up by the background QR sender anyway, and the other emailing statuses
+    // are queued here.
+    if (touchesStatus && !isSingleCell) {
+      logAudit_(sheet, e.range, '', '', 'Bulk edit including Status');
+      const top = Math.max(2, e.range.getRow());
+      const n = e.range.getRow() + e.range.getNumRows() - top;
+      if (n > 0) {
+        const vals = sheet.getRange(top, 1, n, HEADERS.length).getValues();
+        vals.forEach(function (v, i) {
+          sheet.getRange(top + i, lastUpdatedCol).setValue(new Date());
+          const st = v[statusCol - 1];
+          if ([STATUS.NEEDS_CORRECTION, STATUS.EXPIRED, STATUS.REJECTED, STATUS.CANCELLED].indexOf(st) !== -1) {
+            queueStatusNotification_(top + i, v[HEADERS.indexOf('Registration ID')], st);
+          }
+        });
+      }
+      return;
+    }
+
+    if (!touchesStatus) {
       logAudit_(sheet, e.range, e.oldValue, e.value, 'Direct cell edit');
       for (let r = e.range.getRow(); r < e.range.getRow() + e.range.getNumRows(); r++) {
         if (r > 1) sheet.getRange(r, lastUpdatedCol).setValue(new Date());
@@ -939,17 +1076,26 @@ function onEdit(e) {
     const name = sheet.getRange(row, HEADERS.indexOf('Full Legal Name') + 1).getValue();
     const willEmail = [STATUS.APPROVED, STATUS.NEEDS_CORRECTION, STATUS.EXPIRED, STATUS.REJECTED, STATUS.CANCELLED].indexOf(newStatus) !== -1;
 
-    const ui = SpreadsheetApp.getUi();
-    const confirmMsg =
-      'Change status of ' + regId + ' (' + name + ')\n' +
-      'from "' + (oldStatus || '(blank)') + '"\n' +
-      'to "' + newStatus + '"?\n\n' +
-      (willEmail
-        ? 'This will email the registrant within about a minute, and cannot be auto-undone.'
-        : 'This status does not trigger an email.');
-    const response = ui.alert('Confirm Status Change', confirmMsg, ui.ButtonSet.YES_NO);
+    // The popup needs a desktop browser. On the Sheets phone app it cannot
+    // open, so the change is accepted as made (it was a deliberate pick from
+    // the dropdown) instead of silently doing nothing.
+    let confirmed = true;
+    let note = '';
+    try {
+      const ui = SpreadsheetApp.getUi();
+      const confirmMsg =
+        'Change status of ' + regId + ' (' + name + ')\n' +
+        'from "' + (oldStatus || '(blank)') + '"\n' +
+        'to "' + newStatus + '"?\n\n' +
+        (willEmail
+          ? 'This will email the registrant within a few minutes, and cannot be auto-undone.'
+          : 'This status does not trigger an email.');
+      confirmed = ui.alert('Confirm Status Change', confirmMsg, ui.ButtonSet.YES_NO) === ui.Button.YES;
+    } catch (uiErr) {
+      note = ' (no popup available, e.g. phone app)';
+    }
 
-    if (response !== ui.Button.YES) {
+    if (!confirmed) {
       e.range.setValue(oldStatus || '');
       logAudit_(sheet, e.range, oldStatus, newStatus, 'Change declined — reverted, nothing sent');
       return;
@@ -961,10 +1107,12 @@ function onEdit(e) {
       e.range,
       oldStatus,
       newStatus,
-      willEmail ? 'Confirmed — notification queued (~1 min)' : 'Confirmed — no email needed for this status'
+      (willEmail ? 'Confirmed — email queued' : 'Confirmed — no email needed for this status') + note
     );
 
-    if (willEmail) queueStatusNotification_(row, regId, newStatus);
+    // Approved rows are emailed by sendPendingQrEmails_(), which looks at the
+    // sheet itself, so nothing is queued for them here.
+    if (willEmail && newStatus !== STATUS.APPROVED) queueStatusNotification_(row, regId, newStatus);
   } catch (err) {
     console.error('onEdit error: ' + err.message);
   }
@@ -972,84 +1120,216 @@ function onEdit(e) {
 
 /** Adds a confirmed status change to the queue processConfirmedStatusChanges() drains every minute. */
 function queueStatusNotification_(row, regId, newStatus) {
-  const props = PropertiesService.getScriptProperties();
-  const raw = props.getProperty('pendingStatusNotifications');
-  const queue = raw ? JSON.parse(raw) : [];
-  queue.push({
-    row: row,
-    regId: regId,
-    newStatus: newStatus,
-    confirmedAt: new Date().toISOString(),
-    confirmedBy: safeActiveUserEmail_(),
-  });
-  props.setProperty('pendingStatusNotifications', JSON.stringify(queue));
+  const lock = LockService.getScriptLock();
+  const locked = lock.tryLock(8000);
+  try {
+    const props = PropertiesService.getScriptProperties();
+    const raw = props.getProperty('pendingStatusNotifications');
+    const queue = raw ? JSON.parse(raw) : [];
+    queue.push({
+      row: row,
+      regId: regId,
+      newStatus: newStatus,
+      confirmedAt: new Date().toISOString(),
+      confirmedBy: safeActiveUserEmail_(),
+    });
+    props.setProperty('pendingStatusNotifications', JSON.stringify(queue));
+  } finally {
+    if (locked) lock.releaseLock();
+  }
 }
 
 /**
- * Time-driven trigger (every minute, see installTriggers()). This is
- * where the actual "authorized" work happens for a confirmed status
- * change: stamping the correction deadline if needed, and sending the
- * matching email — the popup in onEdit(e) above can't do either of
- * those itself (no authorization from a simple trigger), so it hands
- * off here once you've said Yes.
+ * Time-driven trigger (every minute, see installTriggers()).
+ *  1. Sends any QR emails still owed (sendPendingQrEmails_).
+ *  2. Drains the queue of other status emails (mismatch, rejected, ...).
+ * The queue is taken under the lock and emptied at once, so a status change
+ * made while emails are going out is never lost; failed items go back in.
  */
 function processConfirmedStatusChanges() {
+  try {
+    sendPendingQrEmails_();
+  } catch (err) {
+    console.error('sendPendingQrEmails_ error: ' + err.message);
+  }
+
   const props = PropertiesService.getScriptProperties();
-  const raw = props.getProperty('pendingStatusNotifications');
-  if (!raw) return;
+  if (!props.getProperty('pendingStatusNotifications')) return;
 
   const lock = LockService.getScriptLock();
-  if (!lock.tryLock(10000)) return; // another run is already draining the queue
-
+  if (!lock.tryLock(10000)) return;
+  let queue;
   try {
-    const queue = JSON.parse(props.getProperty('pendingStatusNotifications') || '[]');
-    if (!queue.length) {
-      props.deleteProperty('pendingStatusNotifications');
-      return;
-    }
-
-    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(CONFIG.SHEET_NAME);
-    const statusCol = HEADERS.indexOf('Status') + 1;
-    const auditSheet = getOrCreateAuditSheet_();
-
-    queue.forEach(function (item) {
-      try {
-        const currentStatus = sheet.getRange(item.row, statusCol).getValue();
-        if (currentStatus !== item.newStatus) {
-          // Status was changed again (or reverted) after this was queued —
-          // don't email based on a status that's no longer current.
-          auditSheet.appendRow([
-            new Date(), item.confirmedBy, CONFIG.SHEET_NAME, 'Status (row ' + item.row + ')',
-            item.regId, 'Status', '', item.newStatus,
-            'Skipped queued notification — status changed again before it could send',
-          ]);
-          return;
-        }
-
-        let deadline = null;
-        if (item.newStatus === STATUS.NEEDS_CORRECTION) {
-          deadline = new Date(Date.now() + CONFIG.CORRECTION_WINDOW_HOURS * 60 * 60 * 1000);
-          sheet.getRange(item.row, HEADERS.indexOf('Correction Deadline') + 1).setValue(deadline);
-        }
-
-        const rowValues = sheet.getRange(item.row, 1, 1, HEADERS.length).getValues()[0];
-        const rowObj = rowValuesToObject(rowValues);
-        sendStatusChangeEmail_(item.newStatus, rowObj, deadline);
-
-        auditSheet.appendRow([
-          new Date(), item.confirmedBy, CONFIG.SHEET_NAME, 'Status (row ' + item.row + ')',
-          item.regId, 'Status', '', item.newStatus,
-          'Notification sent (confirmed ' + item.confirmedAt + ')',
-        ]);
-      } catch (err) {
-        console.error('processConfirmedStatusChanges item error: ' + err.message);
-      }
-    });
-
+    queue = JSON.parse(props.getProperty('pendingStatusNotifications') || '[]');
     props.deleteProperty('pendingStatusNotifications');
   } finally {
     lock.releaseLock();
   }
+  if (!queue || !queue.length) return;
+
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(CONFIG.SHEET_NAME);
+  const statusCol = HEADERS.indexOf('Status') + 1;
+  const auditSheet = getOrCreateAuditSheet_();
+  const retry = [];
+
+  queue.forEach(function (item) {
+    try {
+      // Rows can move if someone sorts the sheet: find the row by Reg ID.
+      const rowNum = findRowByRegId_(sheet, item.regId) || item.row;
+      const currentStatus = sheet.getRange(rowNum, statusCol).getValue();
+      if (currentStatus !== item.newStatus) {
+        auditSheet.appendRow([
+          new Date(), item.confirmedBy, CONFIG.SHEET_NAME, 'Status (row ' + rowNum + ')',
+          item.regId, 'Status', '', item.newStatus,
+          'Skipped queued notification — status changed again before it could send',
+        ]);
+        return;
+      }
+      if (mailQuotaLeft_() < 1) {
+        retry.push(item);
+        return;
+      }
+
+      let deadline = null;
+      if (item.newStatus === STATUS.NEEDS_CORRECTION) {
+        deadline = new Date(Date.now() + CONFIG.CORRECTION_WINDOW_HOURS * 60 * 60 * 1000);
+        sheet.getRange(rowNum, HEADERS.indexOf('Correction Deadline') + 1).setValue(deadline);
+      }
+
+      const rowValues = sheet.getRange(rowNum, 1, 1, HEADERS.length).getValues()[0];
+      sendStatusChangeEmail_(item.newStatus, rowValuesToObject(rowValues), deadline);
+
+      auditSheet.appendRow([
+        new Date(), item.confirmedBy, CONFIG.SHEET_NAME, 'Status (row ' + rowNum + ')',
+        item.regId, 'Status', '', item.newStatus,
+        'Notification sent (confirmed ' + item.confirmedAt + ')',
+      ]);
+    } catch (err) {
+      item.tries = (item.tries || 0) + 1;
+      if (item.tries < 5) retry.push(item);
+      console.error('processConfirmedStatusChanges item error: ' + err.message);
+    }
+  });
+
+  if (retry.length) {
+    const lock2 = LockService.getScriptLock();
+    if (lock2.tryLock(10000)) {
+      try {
+        const now = JSON.parse(props.getProperty('pendingStatusNotifications') || '[]');
+        props.setProperty('pendingStatusNotifications', JSON.stringify(retry.concat(now)));
+      } finally {
+        lock2.releaseLock();
+      }
+    }
+  }
+}
+
+function findRowByRegId_(sheet, regId) {
+  if (!regId) return 0;
+  const col = HEADERS.indexOf('Registration ID') + 1;
+  const ids = sheet.getRange(1, col, sheet.getLastRow(), 1).getValues();
+  for (let i = 1; i < ids.length; i++) if (String(ids[i][0]) === String(regId)) return i + 1;
+  return 0;
+}
+
+// ============================================================
+//  QR EMAILS  (the email people need at the door)
+// ============================================================
+
+const QR_EMAIL_COL = 'QR Email Sent';
+
+/** 1-based column of a helper column, added at the far right if missing. */
+function extraCol_(sheet, header) {
+  const lastCol = sheet.getLastColumn();
+  const head = sheet.getRange(1, 1, 1, lastCol).getValues()[0];
+  for (let i = 0; i < head.length; i++) if (String(head[i]).trim() === header) return i + 1;
+  sheet.getRange(1, lastCol + 1).setValue(header).setFontWeight('bold').setBackground('#111111').setFontColor('#ffffff');
+  return lastCol + 1;
+}
+
+/** Records the QR email outcome for one row ("Sent ...", "Not sent ...", "Failed (n) ..."). */
+function markQrEmail_(sheet, rowNum, text) {
+  sheet.getRange(rowNum, extraCol_(sheet, QR_EMAIL_COL)).setValue(text);
+}
+
+/**
+ * Sends the entry-QR email to every Approved row that has not had one yet.
+ * Because it reads the sheet itself, an approval reaches the person no
+ * matter how the Status was changed (dropdown, paste, phone app, dashboard)
+ * and nothing is lost when the daily Gmail limit is hit: the rest simply go
+ * out on a later run, oldest first.
+ */
+function sendPendingQrEmails_() {
+  // A document lock, not the script lock: sending can take a while and the
+  // script lock is what new registrations wait on.
+  const lock = LockService.getDocumentLock();
+  if (!lock || !lock.tryLock(5000)) return { sent: 0, waiting: -1 };
+  try {
+    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(CONFIG.SHEET_NAME);
+    if (!sheet || sheet.getLastRow() < 2) return { sent: 0, waiting: 0 };
+    const col = extraCol_(sheet, QR_EMAIL_COL);
+    const width = Math.max(col, HEADERS.length);
+    const data = sheet.getRange(1, 1, sheet.getLastRow(), width).getValues();
+    const c = function (h) { return HEADERS.indexOf(h); };
+    let sent = 0;
+    let waiting = 0;
+    for (let i = 1; i < data.length; i++) {
+      const r = data[i];
+      if (r[c('Status')] !== STATUS.APPROVED) continue;
+      if (isTestRow_(r[c('Registration ID')])) continue;
+      const email = String(r[c('Email Address')] || '').trim();
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) continue;
+      const mark = String(r[col - 1] || '');
+      if (/^(Sent|Not sent)/.test(mark)) continue;
+      const tries = Number((mark.match(/^Failed \((\d+)\)/) || [0, 0])[1]);
+      if (tries >= 3) continue;
+      if (sent >= CONFIG.QR_EMAILS_PER_RUN || mailQuotaLeft_() < 1) {
+        waiting++;
+        continue;
+      }
+      try {
+        sendApprovalEmailWithQr(rowValuesToObject(r.slice(0, HEADERS.length)));
+        markQrEmail_(sheet, i + 1, 'Sent ' + Utilities.formatDate(new Date(), 'Asia/Manila', 'MMM d, h:mm a'));
+        sent++;
+      } catch (err) {
+        markQrEmail_(sheet, i + 1, 'Failed (' + (tries + 1) + '): ' + String(err.message).slice(0, 120));
+        if (/limit|quota|too many/i.test(err.message)) waiting++;
+      }
+    }
+    return { sent: sent, waiting: waiting };
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+/** Counts for the dashboard: QR emails still owed, and emails left today. */
+function qrEmailStatus_() {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(CONFIG.SHEET_NAME);
+  const out = { waiting: 0, failed: 0, quotaLeft: mailQuotaLeft_() };
+  if (!sheet || sheet.getLastRow() < 2) return out;
+  const col = extraCol_(sheet, QR_EMAIL_COL);
+  const data = sheet.getRange(1, 1, sheet.getLastRow(), Math.max(col, HEADERS.length)).getValues();
+  const c = function (h) { return HEADERS.indexOf(h); };
+  for (let i = 1; i < data.length; i++) {
+    const r = data[i];
+    if (r[c('Status')] !== STATUS.APPROVED || isTestRow_(r[c('Registration ID')])) continue;
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(r[c('Email Address')] || '').trim())) continue;
+    const mark = String(r[col - 1] || '');
+    if (/^(Sent|Not sent)/.test(mark)) continue;
+    if (/^Failed \(3\)/.test(mark)) out.failed++;
+    else out.waiting++;
+  }
+  return out;
+}
+
+/** Menu: Send Waiting QR Emails Now. */
+function sendQrEmailsNow() {
+  const r = sendPendingQrEmails_();
+  SpreadsheetApp.getUi().alert(
+    'Sent ' + r.sent + ' QR email(s). ' +
+      (r.waiting > 0 ? r.waiting + ' more are waiting (daily email limit or batch size) and will go out automatically.' : 'None waiting.') +
+      '\n\nEmails left today for this account: ' + mailQuotaLeft_()
+  );
 }
 
 /** Routes a confirmed status change to the matching notification email. */
@@ -1641,7 +1921,7 @@ function sendMismatchNoticeEmail(rowObj, deadline) {
     infoBox_(rows) +
     warningBox_(
       'You have until <strong>' +
-        escapeHtml_(deadline.toString()) +
+        escapeHtml_(Utilities.formatDate(deadline, 'Asia/Manila', "EEE, MMM d 'at' h:mm a")) +
         '</strong> (about ' +
         CONFIG.CORRECTION_WINDOW_HOURS +
         ' hours from now) to fix this, or your reserved seat(s) will be automatically released back into ' +
@@ -1662,7 +1942,7 @@ function sendMismatchNoticeEmail(rowObj, deadline) {
     htmlBody: shell.html,
     body:
       `Hi ${rowObj['Full Legal Name']}, there's a payment issue on your registration (${regId}). You have ` +
-      `until ${deadline.toString()} to fix it${link ? ' here: ' + link : ', contact ' + CONFIG.ORGANIZER_CONTACT_EMAIL} ` +
+      `until ${Utilities.formatDate(deadline, 'Asia/Manila', "EEE, MMM d 'at' h:mm a")} to fix it${link ? ' here: ' + link : ', contact ' + CONFIG.ORGANIZER_CONTACT_EMAIL} ` +
       `or your seat(s) will be released.\n\n— ${CONFIG.SENDER_DISPLAY_NAME}`,
     name: CONFIG.SENDER_DISPLAY_NAME,
     inlineImages: shell.inlineImages,

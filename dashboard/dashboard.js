@@ -269,6 +269,18 @@
     rule.textContent = text;
     rule.classList.toggle('warn', !b.coverableIfSoldOut);
 
+    // Email + registration status
+    var eb = $('emailBanner');
+    var msgs = [];
+    if (res.registrationOpen === false) msgs.push('Registration is CLOSED (_Config > Registration Open = No).');
+    if (res.email) {
+      if (res.email.waiting) msgs.push(res.email.waiting + ' approved ' + plural(res.email.waiting, 'person', 'people') + ' still waiting for their QR email. It sends automatically every minute' + (res.email.quotaLeft < 1 ? ', but today\'s email limit is used up, so the rest go out tomorrow.' : '.'));
+      if (res.email.failed) msgs.push(res.email.failed + ' QR ' + plural(res.email.failed, 'email') + ' failed 3 times. Check the "QR Email Sent" column in the sheet (often a mistyped address).');
+      if (res.email.quotaLeft < 25 && res.email.quotaLeft >= 1) msgs.push('Only ' + res.email.quotaLeft + ' emails left today for this Gmail account.');
+    }
+    eb.textContent = msgs.join(' ');
+    eb.hidden = msgs.length === 0;
+
     $('updatedAt').textContent = 'Updated ' + res.generatedAt + ' · refreshes every minute';
   }
 

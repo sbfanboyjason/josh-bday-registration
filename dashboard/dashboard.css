@@ -242,3 +242,5 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: var(--p
 .modal-card.wide { max-width: 560px; max-height: 90vh; overflow-y: auto; text-align: left; }
 .modal-card.wide h3 { text-align: left; }
 .pill-group { background: rgba(185, 140, 255, 0.14); color: #dcc8ff; }
+
+.warn-banner { background: rgba(242, 180, 65, 0.12); border-color: var(--pending); color: #ffe2a8; }

@@ -81,6 +81,8 @@ function dashOverview_(staff) {
     me: { name: staff.name, role: staff.role },
     event: { name: CONFIG.EVENT_NAME, date: CONFIG.EVENT_DATE_DISPLAY, venue: CONFIG.VENUE, address: CONFIG.VENUE_ADDRESS },
     budget: computeBudget_(d.data),
+    email: qrEmailStatus_(),
+    registrationOpen: getSwitch_('Registration Open'),
     generatedAt: Utilities.formatDate(new Date(), CHECKIN.TZ, 'MMM d, h:mm:ss a'),
   };
 }
@@ -227,14 +229,23 @@ function dashAddFree_(req, staff) {
 
   ciAudit_(staff, regId, 'Attendee Type', '', type, 'Free pass added from team dashboard');
 
+  // Record the outcome so the background QR sender neither repeats it nor
+  // emails someone the admin chose not to email.
   let emailed = false;
+  const regSheet = dashSheetData_().sheet;
+  const rowNum = findRowByRegId_(regSheet, regId);
   if (email && req.sendEmail !== false) {
     try {
+      if (mailQuotaLeft_() < 1) throw new Error('daily email limit reached');
       sendApprovalEmailWithQr(rowObj);
       emailed = true;
+      if (rowNum) markQrEmail_(regSheet, rowNum, 'Sent ' + Utilities.formatDate(new Date(), 'Asia/Manila', 'MMM d, h:mm a'));
     } catch (err) {
+      // Left unmarked, so the background sender retries it.
       console.error('Free pass email failed for ' + regId + ': ' + err.message);
     }
+  } else if (rowNum) {
+    markQrEmail_(regSheet, rowNum, email ? 'Not sent (admin chose not to email)' : 'Not sent (no email)');
   }
 
   const after = computeBudget_(dashSheetData_().data);
@@ -300,7 +311,9 @@ function dashResendPass_(req, staff) {
   if (!String(rowObj['Email Address'] || '').trim()) {
     return { ok: false, code: 'NO_EMAIL', error: 'No email on file. Add one in the spreadsheet, or screenshot the QR instead.' };
   }
+  if (mailQuotaLeft_() < 1) return { ok: false, code: 'QUOTA', error: 'The daily email limit is used up. Try again tomorrow, or screenshot the QR instead.' };
   sendApprovalEmailWithQr(rowObj);
+  markQrEmail_(d.sheet, idx + 1, 'Sent ' + Utilities.formatDate(new Date(), 'Asia/Manila', 'MMM d, h:mm a'));
   ciAudit_(staff, rowObj['Registration ID'], '', '', '', 'Pass email sent from team dashboard');
   return { ok: true };
 }
