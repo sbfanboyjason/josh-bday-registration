@@ -8,7 +8,7 @@ var SPONSOR_EMAIL = {
   SENDER_NAME: 'SB19 A\'tin Fanboys Team',
   MOBILE: '0924 110 2340',
   EMAIL: 'sbfanboyjason@gmail.com',
-  MESSENGER: '[Messenger link]',
+  MESSENGER: 'm.me/sb19atinfanboys',
 
   subject: 'Be a Ninang of GAME TIME, SSOB\'s birthday celebration (Nov 14)',
 

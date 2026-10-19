@@ -46,7 +46,7 @@ SB19 A'tin Fanboys Team
 SB19 A'tin Fanboys
 Mobile: 0924 110 2340
 Email: sbfanboyjason@gmail.com
-Messenger: [Messenger link]
+Messenger: m.me/sb19atinfanboys
 
 #GAMETIME #SB19 #SSOB #ATIN #NINANG
 ```
