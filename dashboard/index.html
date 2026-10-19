@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="robots" content="noindex, nofollow" />
+<meta name="theme-color" content="#0e0409" />
+<title>Team Dashboard · GAME TIME</title>
+<link rel="icon" type="image/png" href="../assets/favicon.png" />
+<link rel="apple-touch-icon" href="../assets/apple-touch-icon.png" />
+<link rel="stylesheet" href="dashboard.css" />
+<link rel="stylesheet" href="../shared/credit-footer.css" />
+</head>
+<body>
+
+<!-- ============ SIGN IN ============ -->
+<section id="loginView" class="login">
+  <img src="../assets/logo.png" alt="SB19 A'tin Fanboys" class="login-logo" />
+  <h1>GAME TIME</h1>
+  <p class="muted">Team dashboard · same PIN as the check-in scanner</p>
+  <form id="loginForm" autocomplete="off">
+    <label for="pinInput" class="sr-only">6-digit PIN</label>
+    <input id="pinInput" type="password" inputmode="numeric" pattern="\d{6}" maxlength="6"
+           placeholder="••••••" autocomplete="one-time-code" required />
+    <button type="submit" class="btn btn-primary" id="loginBtn">Sign in</button>
+    <p class="error-text" id="loginError" role="alert"></p>
+  </form>
+</section>
+
+<!-- ============ APP ============ -->
+<div id="appView" hidden>
+  <header class="topbar">
+    <div>
+      <div class="topbar-event">GAME TIME</div>
+      <div class="topbar-sub" id="whoAmI"></div>
+    </div>
+    <div class="topbar-actions">
+      <button type="button" class="icon-btn" id="refreshBtn" aria-label="Refresh">↻</button>
+      <button type="button" class="link-btn" id="logoutBtn">Sign out</button>
+    </div>
+  </header>
+
+  <nav class="tabs" role="tablist" aria-label="Dashboard sections">
+    <button type="button" role="tab" class="tab active" data-tab="overview" aria-selected="true">Overview</button>
+    <button type="button" role="tab" class="tab" data-tab="Registrant">Registrants <span class="tab-count" id="countRegistrant"></span></button>
+    <button type="button" role="tab" class="tab" data-tab="Guest">Guests <span class="tab-count" id="countGuest"></span></button>
+    <button type="button" role="tab" class="tab" data-tab="Admin">Admin <span class="tab-count" id="countAdmin"></span></button>
+    <button type="button" role="tab" class="tab" data-tab="Volunteer">Volunteers <span class="tab-count" id="countVolunteer"></span></button>
+  </nav>
+
+  <main class="wrap">
+    <div class="banner" id="globalError" role="alert" hidden></div>
+
+    <!-- ===== OVERVIEW ===== -->
+    <section id="tab-overview" class="tab-panel">
+      <div class="verdict" id="verdictCard">
+        <div class="verdict-label" id="verdictLabel">Loading…</div>
+        <div class="verdict-amount" id="verdictAmount">—</div>
+        <div class="verdict-sub" id="verdictSub"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <h2>Headcount</h2>
+          <span class="muted small" id="capLabel"></span>
+        </div>
+        <div class="meter" id="meter" aria-hidden="true">
+          <span class="seg seg-paid"></span><span class="seg seg-pending"></span><span class="seg seg-free"></span>
+        </div>
+        <ul class="legend">
+          <li><i class="dot dot-paid"></i>Paid, verified <b id="hcPaid">0</b></li>
+          <li><i class="dot dot-pending"></i>Paid, pending <b id="hcPending">0</b></li>
+          <li><i class="dot dot-free"></i>Free passes <b id="hcFree">0</b></li>
+          <li><i class="dot dot-left"></i>Seats left <b id="hcLeft">0</b></li>
+        </ul>
+        <div class="mini-grid">
+          <div><span class="mini-num" id="hcGuest">0</span><span class="mini-lbl">Guests</span></div>
+          <div><span class="mini-num" id="hcAdmin">0</span><span class="mini-lbl">Admin</span></div>
+          <div><span class="mini-num" id="hcVolunteer">0</span><span class="mini-lbl">Volunteers</span></div>
+          <div><span class="mini-num" id="hcIn">0</span><span class="mini-lbl">Checked in</span></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <h2>Budget</h2>
+          <span class="muted small">verified payments</span>
+        </div>
+        <table class="money">
+          <tbody>
+            <tr><th>Collected <span class="muted" id="lnCollectedHow"></span></th><td id="lnCollected"></td></tr>
+            <tr><th>Venue bill <span class="muted" id="lnBillHow"></span></th><td id="lnBill"></td></tr>
+            <tr class="total"><th>Surplus / shortfall</th><td id="lnSurplus"></td></tr>
+          </tbody>
+        </table>
+        <p class="muted small projection" id="projection"></p>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h2>Free passes</h2></div>
+        <div class="cover-grid">
+          <div class="cover-cell">
+            <span class="cover-num" id="cvCost">₱0</span>
+            <span class="cover-lbl">cost of <b id="cvFree">0</b> free passes</span>
+          </div>
+          <div class="cover-cell">
+            <span class="cover-num" id="cvNeeded">0</span>
+            <span class="cover-lbl">paid heads needed to cover them</span>
+          </div>
+          <div class="cover-cell">
+            <span class="cover-num" id="cvMore">0</span>
+            <span class="cover-lbl">more paid heads still needed</span>
+          </div>
+          <div class="cover-cell">
+            <span class="cover-num" id="cvAfford">0</span>
+            <span class="cover-lbl">more free passes the surplus already covers</span>
+          </div>
+        </div>
+        <div class="rule" id="ruleBox"></div>
+      </div>
+
+      <p class="muted small center" id="updatedAt"></p>
+    </section>
+
+    <!-- ===== LIST TABS (one template, filled per type) ===== -->
+    <section id="tab-list" class="tab-panel" hidden>
+      <div class="card" id="addCard" hidden>
+        <div class="card-head">
+          <h2 id="addTitle">Add a free pass</h2>
+        </div>
+        <form id="addForm" novalidate autocomplete="off">
+          <div class="row-2">
+            <div class="field">
+              <label for="addFirst">First name</label>
+              <input id="addFirst" type="text" maxlength="60" required />
+            </div>
+            <div class="field">
+              <label for="addLast">Last name</label>
+              <input id="addLast" type="text" maxlength="60" required />
+            </div>
+          </div>
+          <div class="row-2">
+            <div class="field">
+              <label for="addEmail">Email <span class="muted">(optional)</span></label>
+              <input id="addEmail" type="email" inputmode="email" />
+            </div>
+            <div class="field">
+              <label for="addPhone">Mobile <span class="muted">(optional)</span></label>
+              <input id="addPhone" type="tel" inputmode="tel" placeholder="09XXXXXXXXX" />
+            </div>
+          </div>
+          <div class="field">
+            <label for="addNote">Note <span class="muted">(optional, e.g. "host", "photographer")</span></label>
+            <input id="addNote" type="text" maxlength="200" />
+          </div>
+          <label class="check">
+            <input type="checkbox" id="addSendEmail" checked />
+            <span>Email the QR pass if an email is given</span>
+          </label>
+          <div class="impact" id="addImpact"></div>
+          <p class="error-text" id="addError" role="alert"></p>
+          <button type="submit" class="btn btn-primary" id="addBtn">Add pass</button>
+        </form>
+      </div>
+
+      <div class="card" id="viewOnlyNote" hidden>
+        <p class="muted small">You can view this list. Only an Admin account can add or remove free passes.</p>
+      </div>
+
+      <div class="list-tools">
+        <input type="search" id="listSearch" placeholder="Search name or ID" aria-label="Search this list" />
+        <label class="check small" id="showCancelledWrap">
+          <input type="checkbox" id="showCancelled" />
+          <span>Show removed / inactive</span>
+        </label>
+      </div>
+      <p class="muted small" id="listSummary"></p>
+      <ul class="people" id="peopleList"></ul>
+      <p class="muted small center" id="listEmpty" hidden>No one here yet.</p>
+    </section>
+  </main>
+</div>
+
+<!-- ============ QR MODAL ============ -->
+<div class="modal" id="qrModal" hidden>
+  <div class="modal-card">
+    <button type="button" class="modal-close" id="qrClose" aria-label="Close">×</button>
+    <div class="qr-name" id="qrName"></div>
+    <div class="qr-id muted" id="qrId"></div>
+    <img id="qrImg" alt="Entry QR code" width="260" height="260" />
+    <p class="muted small">Screenshot this and send it privately. It works like any paid ticket at the door, with a valid ID.</p>
+  </div>
+</div>
+
+<!-- ============ REMOVE MODAL ============ -->
+<div class="modal" id="removeModal" hidden>
+  <div class="modal-card">
+    <h3>Remove this free pass?</h3>
+    <p id="removeWho"></p>
+    <p class="muted small">Their QR stops working and their seat goes back to the pool. The row stays in the sheet as Cancelled.</p>
+    <div class="field">
+      <label for="removeReason">Reason <span class="muted">(optional)</span></label>
+      <input id="removeReason" type="text" maxlength="200" />
+    </div>
+    <p class="error-text" id="removeError" role="alert"></p>
+    <div class="modal-actions">
+      <button type="button" class="btn btn-ghost" id="removeCancel">Keep</button>
+      <button type="button" class="btn btn-danger" id="removeConfirm">Remove</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script src="../assets/config.js"></script>
+<script src="dashboard.js"></script>
+<script src="../shared/credit-footer.js"></script>
+</body>
+</html>
