@@ -4,7 +4,7 @@
  *  Registration System Backend
  *  (Google Apps Script, attached to the registration spreadsheet)
  * ============================================================
- *  Date    : Saturday, November 14, 2026, 6:00 PM
+ *  Date    : Saturday, November 14, 2026, 5:00 PM onwards
  *  Venue   : Teaspoon Cafe
  *  Fan-organized by SB19 A'tin Fanboys
  *
@@ -49,7 +49,7 @@
 const CONFIG = {
   EVENT_NAME: "GAME TIME: SSOB's Birthday Celebration",
   EVENT_SUBTITLE: "The Never Growing Old SSOB's Birthday Celebration",
-  EVENT_DATE_DISPLAY: 'Saturday, November 14, 2026, 6:00 PM',
+  EVENT_DATE_DISPLAY: 'Saturday, November 14, 2026, 5:00 PM onwards',
   VENUE: 'Teaspoon Cafe',
   MENU_NAME: 'Josh Birthday Admin',
 

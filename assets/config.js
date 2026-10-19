@@ -7,7 +7,7 @@
 const EVENT_CONFIG = {
   EVENT_NAME: 'GAME TIME',
   EVENT_TAGLINE: "The Never Growing Old SSOB's Birthday Celebration",
-  EVENT_DATE_DISPLAY: 'Sat, November 14, 2026 · 6:00 PM',
+  EVENT_DATE_DISPLAY: 'Sat, November 14, 2026 · 5:00 PM onwards',
   VENUE: 'Teaspoon Cafe',
   ORGANIZER_NOTE:
     "Fan-organized birthday celebration by SB19 A'tin Fanboys. Not an official SB19 or management event.",
