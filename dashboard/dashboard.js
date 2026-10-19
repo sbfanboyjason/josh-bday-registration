@@ -668,6 +668,24 @@
         var actions = document.createElement('div');
         actions.className = 'person-actions';
         actions.appendChild(chip('Edit', '', function () { openSponsorEditor(r); }));
+        if (typeof SPONSOR_EMAIL !== 'undefined') {
+          actions.appendChild(chip('Copy invitation', '', function () {
+            var m = SPONSOR_EMAIL.forBrand(r.name);
+            copyText('Subject: ' + m.subject + '\n\n' + m.body).then(function () { toast('Invitation for ' + r.name + ' copied'); });
+          }));
+        }
+        if (r.email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(r.email) && typeof SPONSOR_EMAIL !== 'undefined') {
+          actions.appendChild(chip('Write in Gmail', '', function () {
+            var m = SPONSOR_EMAIL.forBrand(r.name);
+            var url = 'https://mail.google.com/mail/?view=cm&fs=1' +
+              '&authuser=' + encodeURIComponent(SPONSOR_EMAIL.EMAIL) +
+              '&to=' + encodeURIComponent(r.email) +
+              '&su=' + encodeURIComponent(m.subject) +
+              '&body=' + encodeURIComponent(m.body);
+            window.open(url, '_blank', 'noopener');
+            toast('Opened in Gmail. After you send it, set the status to Emailed.');
+          }));
+        }
         if (r.email) {
           actions.appendChild(chip('Copy email', '', function () {
             copyText(r.email).then(function () { toast('Copied ' + r.email); });
@@ -679,14 +697,23 @@
     });
   }
 
-  function copyText(t) {
-    if (navigator.clipboard && navigator.clipboard.writeText) return navigator.clipboard.writeText(t);
+  function copyFallback(t) {
     var ta = document.createElement('textarea');
     ta.value = t;
+    ta.setAttribute('readonly', '');
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
     document.body.appendChild(ta);
     ta.select();
     try { document.execCommand('copy'); } catch (e) {}
     document.body.removeChild(ta);
+  }
+
+  function copyText(t) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      return navigator.clipboard.writeText(t).catch(function () { copyFallback(t); });
+    }
+    copyFallback(t);
     return Promise.resolve();
   }
 

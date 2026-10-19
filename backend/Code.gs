@@ -87,7 +87,7 @@ const CONFIG = {
   TERMS_SUMMARY_HTML:
     '<ul>' +
     '<li>Your registration is <strong>non-refundable but transferable</strong>. Tell us in advance if someone else will use it.</li>' +
-    '<li>Bring the QR code below and a valid ID matching the registered name (or the name of the person it was transferred to).</li>' +
+    '<li>Bring your entry QR code and a valid ID matching the registered name (or the name of the person it was transferred to).</li>' +
     '<li>Your registration includes your food at the venue.</li>' +
     '<li>This is an independently organized fan celebration, not an official SB19 or management event.</li>' +
     '</ul>',
@@ -576,6 +576,7 @@ function handleNewRegistration(e) {
     const firstName = String(payload.firstName).trim().replace(/\s+/g, ' ');
     const lastName = String(payload.lastName).trim().replace(/\s+/g, ' ');
     payload.fullName = joinName_(firstName, lastName); // used by the confirmation email
+    payload.firstName = firstName;
 
     let screenshotUrl = '';
     let adminNote = '';
@@ -1372,6 +1373,33 @@ function buildEmailShell_(options) {
  * everything the registrant just submitted, so they have a record of
  * it even before verification happens.
  */
+/** "Juan" from a row or payload, falling back to the full name. */
+function greetName_(first, full) {
+  return String(first || '').trim() || String(full || '').trim() || 'there';
+}
+
+/** When / where box with a map link, shared by the emails. */
+function eventBox_() {
+  return infoBox_(
+    infoRow_('Event', '<strong>GAME TIME</strong><br>' + escapeHtml_(CONFIG.EVENT_SUBTITLE)) +
+      infoRow_('When', '<strong>' + escapeHtml_(CONFIG.EVENT_DATE_DISPLAY) + '</strong>') +
+      infoRow_(
+        'Where',
+        '<strong>' + escapeHtml_(CONFIG.VENUE) + '</strong><br>' + escapeHtml_(CONFIG.VENUE_ADDRESS) +
+          '<br><a href="' + CONFIG.VENUE_MAP_URL + '" style="color:#ff6fae;">Open in Google Maps</a>'
+      )
+  );
+}
+
+/** Numbered list styled for the dark email body. */
+function stepsHtml_(items) {
+  return (
+    '<ol style="margin:0 0 22px;padding-left:20px;font-size:14px;line-height:1.6;">' +
+    items.map(function (t) { return '<li style="margin-bottom:6px;">' + t + '</li>'; }).join('') +
+    '</ol>'
+  );
+}
+
 function sendPendingConfirmationEmail(payload, regId) {
   const fee = getSetting_('Registration Fee');
   const amount = fee ? CONFIG.CURRENCY + (Number(payload.ticketQuantity) * fee).toLocaleString() : '';
@@ -1384,30 +1412,32 @@ function sendPendingConfirmationEmail(payload, regId) {
     infoRow_('Fanboy / Fangirl', escapeHtml_(payload.fanType)) +
     infoRow_('Facebook', escapeHtml_(payload.facebook)) +
     (amount ? infoRow_('Amount Due', '<strong>' + amount + '</strong>') : '') +
-    infoRow_('Payment Channel', escapeHtml_(payload.paymentChannel)) +
+    infoRow_('Payment Channel', escapeHtml_(String(payload.paymentChannel).toLowerCase() === 'gcash' ? 'GCash' : payload.paymentChannel)) +
     infoRow_('Reference No.', escapeHtml_(payload.paymentReference));
 
+  const hi = escapeHtml_(greetName_(payload.firstName, payload.fullName));
   const bodyHtml =
-    '<p>Hi <strong>' + escapeHtml_(payload.fullName) + '</strong>,</p>' +
-    '<p>We\'ve received your registration for <strong>' +
-    escapeHtml_(CONFIG.EVENT_NAME) +
-    '</strong>. Here\'s a copy of everything you submitted, for your records:</p>' +
+    '<p>Hi ' + hi + ',</p>' +
+    '<p>We got your registration for GAME TIME, SSOB\'s birthday celebration. Thank you for joining us! ' +
+    'Here is a copy of what you sent, for your records:</p>' +
     infoBox_(rows) +
-    '<p>Your status is currently <strong>Pending Payment Verification</strong>. Our team checks each ' +
-    'payment manually — you\'ll get a follow-up email the moment it\'s confirmed.</p>' +
+    '<p><strong>What happens next</strong></p>' +
+    stepsHtml_([
+      'Our team checks your GCash payment by hand against the reference number above.',
+      'Once it matches, we email you again with your <strong>entry QR code</strong>. That second email is your ticket.',
+      'On November 14, bring the QR code and a valid ID with the same name you registered with.',
+    ]) +
     warningBox_(
-      'If we find an issue with your payment (amount doesn\'t match, reference not found, incomplete ' +
-        'payment, etc.), we\'ll email you a link to correct it yourself, with a <strong>' +
-        CONFIG.CORRECTION_WINDOW_HOURS +
-        '-hour window</strong> to fix it before your seat(s) are released back to other registrants.'
+      'If something doesn\'t match (wrong amount, reference not found, unclear screenshot), we will email you a ' +
+        'link to fix it yourself. You will have <strong>' + CONFIG.CORRECTION_WINDOW_HOURS +
+        ' hours</strong> to correct it before your slot goes to someone else.'
     ) +
-    '<p style="font-size:13px;color:rgba(255,233,242,0.7);">This is an automated message — no need to reply. ' +
-    'For any concerns, reach us at <strong>' +
-    CONFIG.ORGANIZER_CONTACT_EMAIL +
-    '</strong>.</p>';
+    eventBox_() +
+    '<p style="font-size:13px;color:rgba(255,233,242,0.7);">This is an automated message, so replies are not read. ' +
+    'For questions, email <strong>' + CONFIG.ORGANIZER_CONTACT_EMAIL + '</strong> and include your Registration ID.</p>';
 
   const shell = buildEmailShell_({
-    pillLabel: 'Pending Verification',
+    pillLabel: 'Payment Being Checked',
     pillColor: '#ff6fae',
     pillTextColor: '#0a0a0a',
     bodyHtml: bodyHtml,
@@ -1415,12 +1445,13 @@ function sendPendingConfirmationEmail(payload, regId) {
 
   MailApp.sendEmail({
     to: payload.email,
-    subject: `[${CONFIG.EVENT_NAME}] Registration Received — ${regId}`,
+    subject: `[GAME TIME] We got your registration (${regId})`,
     htmlBody: shell.html,
     body:
-      `Hi ${payload.fullName},\n\nWe've received your registration (${regId}) for ${CONFIG.EVENT_NAME}. ` +
-      `Status: Pending Payment Verification. Please view this email in ` +
-      `an HTML-capable mail app for full details.\n\n— ${CONFIG.SENDER_DISPLAY_NAME}`,
+      `Hi ${greetName_(payload.firstName, payload.fullName)},\n\nWe got your registration (${regId}) for GAME TIME, ` +
+      `SSOB's birthday celebration. We are checking your GCash payment now. Once it matches, we will email your ` +
+      `entry QR code.\n\n${CONFIG.EVENT_DATE_DISPLAY}\n${CONFIG.VENUE}, ${CONFIG.VENUE_ADDRESS}\n\n` +
+      `Questions: ${CONFIG.ORGANIZER_CONTACT_EMAIL}\n\n${CONFIG.SENDER_DISPLAY_NAME}`,
     name: CONFIG.SENDER_DISPLAY_NAME,
     inlineImages: shell.inlineImages,
   });
@@ -1456,41 +1487,47 @@ function sendApprovalEmailWithQr(rowObj) {
     infoRow_('Registration ID', '<strong>' + escapeHtml_(regId) + '</strong>') +
     infoRow_('Name', '<strong>' + escapeHtml_(rowObj['Full Legal Name']) + '</strong>') +
     (amount ? infoRow_('Amount Paid', '<strong>' + amount + '</strong>') : '') +
-    (isFree ? infoRow_('Pass', '<strong>' + escapeHtml_(type) + ' (complimentary)</strong>') : '') +
-    infoRow_('Event', escapeHtml_(CONFIG.EVENT_NAME)) +
-    infoRow_('When', '<strong>' + escapeHtml_(CONFIG.EVENT_DATE_DISPLAY) + '</strong>') +
-    infoRow_('Where', '<strong>' + escapeHtml_(CONFIG.VENUE) + '</strong><br>' + escapeHtml_(CONFIG.VENUE_ADDRESS) +
-      '<br><a href="' + CONFIG.VENUE_MAP_URL + '" style="color:#ff6fae;">Open in Google Maps</a>');
+    (isFree ? infoRow_('Pass', '<strong>' + escapeHtml_(type) + ' pass (complimentary)</strong>') : '');
 
   const qrSection = qrBlob
     ? '<div style="text-align:center;background-color:#ffffff;border-radius:10px;padding:20px;margin:0 0 22px;">' +
       '<img src="cid:entryQr" width="240" height="240" alt="Entry QR code" style="display:block;margin:0 auto;" />' +
       '</div>'
     : warningBox_(
-        'Your QR code couldn\'t be generated automatically — please contact <strong>' +
+        'We could not attach your QR code this time. Please email <strong>' +
           CONFIG.ORGANIZER_CONTACT_EMAIL +
-          '</strong> before the event and we\'ll send it manually. Your Registration ID above still confirms your approval.'
+          '</strong> and we will send it. Your Registration ID above already confirms your slot.'
       );
 
+  const hi = escapeHtml_(greetName_(rowObj['First Name'], rowObj['Full Legal Name']));
   const bodyHtml =
-    '<p>Hi <strong>' + escapeHtml_(rowObj['Full Legal Name']) + '</strong>,</p>' +
+    '<p>Hi ' + hi + ',</p>' +
     (isFree
-      ? '<p>You have a complimentary <strong>' + escapeHtml_(type) + '</strong> pass to the celebration. No payment needed. See you there! 🎉</p>'
-      : '<p>Your payment has been verified. Your registration is <strong>Approved</strong> and you\'re in! 🎉</p>') +
-    warningBox_(
-      '<strong>Please arrive early (' +
-        escapeHtml_(CONFIG.EVENT_DATE_DISPLAY) +
-        ').</strong> The SB19 A\'tin Fanboys team checks every QR code and ID at the door, and the program ' +
-        'starts on time. <strong>We reserve the right to deny entry to late arrivals.</strong>'
-    ) +
+      ? '<p>You are on the GAME TIME list with a <strong>' + escapeHtml_(type) + ' pass</strong>. No payment needed. ' +
+        'Thank you for helping us celebrate SSOB! 🎉</p>'
+      : '<p>Your payment is verified and your slot is confirmed. <strong>You\'re in!</strong> 🎉 ' +
+        'See you on Saturday, November 14 to celebrate SSOB\'s birthday.</p>') +
     infoBox_(rows) +
-    '<p><strong>Show this QR code at the entrance:</strong></p>' +
+    '<p><strong>Your entry QR code</strong></p>' +
     qrSection +
+    '<p><strong>Before you go</strong></p>' +
+    stepsHtml_([
+      'Show this QR code at the door. A screenshot on your phone works.',
+      'Bring a valid ID with the same name as above. We check every QR and ID at the entrance.',
+      'Doors open at 5:00 PM. Coming early keeps the line short.',
+      isFree
+        ? 'Your pass includes your food at ' + escapeHtml_(CONFIG.VENUE) + '.'
+        : 'Your ' + escapeHtml_(amount || 'registration') + ' covers your food at ' + escapeHtml_(CONFIG.VENUE) + '.',
+      isFree
+        ? 'This pass is for you only. If you can\'t make it, please tell the team so someone else can use the slot.'
+        : 'Can\'t make it? Your slot is transferable. Email us before the event with the full name of the person taking your place.',
+    ]) +
+    eventBox_() +
     '<p><strong>Terms &amp; Conditions</strong></p>' +
     '<div style="font-size:13px;line-height:1.6;">' +
     CONFIG.TERMS_SUMMARY_HTML +
     '</div>' +
-    '<p>See you at the celebration!</p>';
+    '<p>See you there, A\'TIN!</p>';
 
   const shell = buildEmailShell_({
     pillLabel: isFree ? type + ' Pass ✓' : 'Approved ✓',
@@ -1505,13 +1542,14 @@ function sendApprovalEmailWithQr(rowObj) {
   MailApp.sendEmail({
     to: rowObj['Email Address'],
     subject: isFree
-      ? `[${CONFIG.EVENT_NAME}] Your ${type} Pass — ${regId}`
-      : `[${CONFIG.EVENT_NAME}] You're In! Registration Approved — ${regId}`,
+      ? `[GAME TIME] Your ${type} pass and entry QR (${regId})`
+      : `[GAME TIME] You're in! Your entry QR code (${regId})`,
     htmlBody: shell.html,
     body:
-      `Hi ${rowObj['Full Legal Name']}, your ${isFree ? type + ' pass' : 'registration'} (${regId}) is confirmed. ` +
-      `Please arrive early (${CONFIG.EVENT_DATE_DISPLAY}); late arrivals may be denied entry. Please view this ` +
-      `email in an HTML-capable mail app to see your entry QR code and full details.\n\n— ${CONFIG.SENDER_DISPLAY_NAME}`,
+      `Hi ${greetName_(rowObj['First Name'], rowObj['Full Legal Name'])},\n\nYour ${isFree ? type + ' pass' : 'registration'} ` +
+      `(${regId}) is confirmed. Open this email in a mail app that shows images to see your entry QR code.\n\n` +
+      `${CONFIG.EVENT_DATE_DISPLAY}\n${CONFIG.VENUE}, ${CONFIG.VENUE_ADDRESS}\n` +
+      `Bring the QR code and a valid ID with the same name.\n\n${CONFIG.SENDER_DISPLAY_NAME}`,
     name: CONFIG.SENDER_DISPLAY_NAME,
     inlineImages: inlineImages,
   });

@@ -131,7 +131,7 @@ const SPONSOR_SEED = [
   ['Timezone Philippines', 'Arcades and entertainment', 'On the SB19 partner logo wall', 'SB19 partner (logo wall)', 'Team screenshot'],
   ['Fino Premium Touch', 'Hair care', 'On the SB19 partner logo wall', 'SB19 partner (logo wall)', 'Team screenshot'],
   ['Bonchon Philippines', 'Restaurant', 'On the SB19 partner logo wall', 'SB19 partner (logo wall)', 'Team screenshot'],
-  ['Bioderm', 'Personal care', 'On the SB19 partner logo wall', 'SB19 partner (logo wall)', 'Team screenshot'],
+  ['Bioderm', 'Personal care (made by IPI)', 'On the SB19 partner logo wall', 'SB19 partner (logo wall)', 'Team screenshot'],
   ['Lunari Global', 'Talent management', 'International representation partner (Jun 2026)', 'Music / industry partner', 'https://en.wikipedia.org/wiki/SB19'],
   ['United Talent Agency (UTA)', 'Talent agency', 'International representation partner (Jun 2026)', 'Music / industry partner', 'https://en.wikipedia.org/wiki/SB19'],
   ['Department of Tourism', 'Government', 'SB19 named Philippine tourism ambassadors (Jul 2026)', 'Music / industry partner', 'https://www.philstar.com/entertainment/2026/07/26/2544844/sb19-named-philippine-tourism-ambassadors'],
@@ -141,6 +141,51 @@ const SPONSOR_SEED = [
   ['Warner Chappell Music', 'Music publishing', 'On the SB19 partner logo wall', 'Music / industry partner', 'Team screenshot'],
   ['Believe', 'Music distribution', 'On the SB19 partner logo wall', 'Music / industry partner', 'Team screenshot'],
 ];
+
+/**
+ * Public business contacts for the starter list, found October 19, 2026
+ * on each company's own website or official page (or, where noted, an
+ * older or third-party listing). [email, how to reach / who, website].
+ * Many brands have no public sponsorship email; for those the best route
+ * is their contact form or a message to their official Facebook page.
+ * Check before sending: contact details change.
+ */
+const SPONSOR_CONTACTS = {
+  'Datu Puti': ['hello@nutriasia.com', 'NutriAsia (makes Datu Puti). Phone (02) 8800 3888', 'https://www.nutriasia.com/contact-us'],
+  'Great Taste': ['customercare@urc.com.ph', 'URC (makes Great Taste). Use the contact form and pick the subject "Sponsorship Requests"', 'https://www.urc.com.ph/contact-us'],
+  'Mang Juan': ['customercare@urc.com.ph', 'URC / Jack \'n Jill. Contact form subject "Sponsorship Requests"; FB page Mang Juan Republic', 'https://www.urc.com.ph/contact-us'],
+  'Lucky Me!': ['inquiry@mondenissin.com', 'Monde Nissin general inquiries', 'https://mondenissin.com/contact-us/'],
+  'CDO Idol': ['cdo@cdo.com.ph', 'Email is from a third-party listing; the contact form on cdo.com.ph is the official route. Phone (02) 294 1111', 'https://www.cdo.com.ph/contact-us'],
+  'Bonchon Philippines': ['customercare@bonchon.com.ph', 'Customer care (ask to forward to Marketing); contact form on the site', 'https://bonchon.com.ph/contact-us'],
+  'Timezone Philippines': ['', 'No public email. Party hotline 0920 932 7167, or message their Facebook page', 'https://www.timezonegames.com/en-ph/contact-us'],
+  'NovoDental': ['info@novodental.com.ph', 'Phone +63 917 652 6686', 'https://novodental.com.ph'],
+  'Bioderm': ['inquiry@ipi.ph', 'IPI, makers of Bioderm. Phone (032) 420 6900', 'https://ipi.ph'],
+  'Fino Premium Touch': ['', 'No public PH email found. Message the Fino Philippines Facebook page', ''],
+  'Pepsi Philippines': ['connect@pcppi.com.ph', 'Pepsi-Cola Products Philippines. Contact form topic "Marketing & Sales"; SMS 0998 567 3774', 'https://www.pepsiphilippines.com/contact-us'],
+  "McDonald's Philippines": ['writeus@ph.mcd.com', 'Customer care (02) 8888-6236; ask to forward to Marketing', 'https://www.mcdonalds.com.ph/contact-us'],
+  "Dunkin' Philippines": ['support@goldendonuts.freshdesk.com', 'Official contact address. An older Dunkin\' post pointed proposals to mktgservices@dunkindonuts.ph', 'https://dunkin.com.ph/contact-us'],
+  'Pizza Hut Philippines': ['phutcsc@pizzahut.com.ph', 'Customer service; contact form on the site', 'https://www.pizzahut.com.ph/contact'],
+  'Selecta': ['cec.philippines@unilever.com', 'Unilever Philippines consumer care, +632 8588 8800', 'https://www.selectaphilippines.com'],
+  'Watsons Philippines': ['Sharon.Decapia@watsons.com.ph', 'SAVP, Marketing Communications, PR and Sustainability (listed on the Watsons Contact Us page). Customer care: watsons.customercare@watsons.com.ph', 'https://www.watsons.com.ph/contactUs'],
+  'Bench': ['customersupport@benchmail.ph', 'Customer support (ask to forward to Marketing)', 'https://shop.bench.com.ph'],
+  'Puregold': ['', 'No public marketing email found. Head office trunkline +632 522-8801 to 04 (older listing), or message the Puregold Facebook page', 'https://puregold.com.ph'],
+  'KFC Philippines': ['', 'No public marketing email found. Message the KFC Philippines Facebook page', 'https://corporate.kfc.com.ph'],
+};
+
+/** Fills Email / Contact Person / Website on a row if they are blank. */
+function sponsorApplyContact_(row, name) {
+  const c = SPONSOR_CONTACTS[name];
+  if (!c) return false;
+  let changed = false;
+  [['Email', c[0]], ['Contact Person', c[1]], ['Website / Social', c[2]]].forEach(function (pair) {
+    const i = sponsorCol_(pair[0]);
+    if (pair[1] && !String(row[i] || '').trim()) {
+      row[i] = pair[1];
+      changed = true;
+    }
+  });
+  return changed;
+}
 
 // ============================================================
 //  SHEET
@@ -209,8 +254,16 @@ function loadSponsorSeed_(by) {
   const sheet = sponsorSheet_() || setupSponsorsSheet();
   const data = sheet.getDataRange().getValues();
   const have = {};
-  for (let i = 1; i < data.length; i++) have[String(data[i][1]).trim().toLowerCase()] = true;
   const now = new Date();
+  for (let i = 1; i < data.length; i++) {
+    const name = String(data[i][1]).trim();
+    have[name.toLowerCase()] = true;
+    // Rows loaded before contacts were known: fill blank contact cells only.
+    const row = data[i].slice();
+    if (sponsorApplyContact_(row, name)) {
+      sheet.getRange(i + 1, 1, 1, row.length).setValues([row]);
+    }
+  }
   let added = 0;
   SPONSOR_SEED.forEach(function (s) {
     if (have[s[0].toLowerCase()]) return;
@@ -229,6 +282,7 @@ function loadSponsorSeed_(by) {
     put('Show on Site', 'Yes');
     put('Pubmat', 'Not started');
     put('Source', s[4]);
+    sponsorApplyContact_(row, s[0]);
     put('Last Updated', now);
     put('Updated By', by);
     sheet.appendRow(row);
