@@ -1515,6 +1515,7 @@ function sendApprovalEmailWithQr(rowObj) {
       'Show this QR code at the door. A screenshot on your phone works.',
       'Bring a valid ID with the same name as above. We check every QR and ID at the entrance.',
       'Doors open at 5:00 PM. Coming early keeps the line short.',
+      'Getting there: the nearest train stop is LRT-1 R. Papa Station; from there take a tricycle or e-trike to Juan Luna Street, Gagalangin. Parking is free but limited, so commuting or booking a ride is best.',
       isFree
         ? 'Your pass includes your food at ' + escapeHtml_(CONFIG.VENUE) + '.'
         : 'Your ' + escapeHtml_(amount || 'registration') + ' covers your food at ' + escapeHtml_(CONFIG.VENUE) + '.',

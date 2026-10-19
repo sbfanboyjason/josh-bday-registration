@@ -442,6 +442,29 @@
 
   }
 
+  // ---------- FAQ ----------
+  // Answers come from FAQ in config.js (trusted, written by the organizers).
+  function renderFaq() {
+    const list = document.getElementById('faqList');
+    if (!list || !cfg.FAQ || !cfg.FAQ.length) {
+      const sec = document.getElementById('faq');
+      if (sec) sec.hidden = true;
+      return;
+    }
+    cfg.FAQ.forEach(function (item) {
+      const d = document.createElement('details');
+      d.className = 'faq-item';
+      const s = document.createElement('summary');
+      s.textContent = item[0];
+      const a = document.createElement('div');
+      a.className = 'faq-answer';
+      a.innerHTML = item[1];
+      d.appendChild(s);
+      d.appendChild(a);
+      list.appendChild(d);
+    });
+  }
+
   // ---------- Sponsors strip ----------
   // Only confirmed sponsors with "Show on Site" = Yes come back from the
   // backend, and only their name and logo link. Hidden if there are none.
@@ -480,6 +503,7 @@
     setupUpload();
     setupConfirmModal();
     setupSubmit();
+    renderFaq();
     loadSponsors();
   });
 })();
