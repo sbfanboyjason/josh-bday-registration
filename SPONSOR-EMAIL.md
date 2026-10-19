@@ -9,33 +9,35 @@ Dear [BRAND NAME] team,
 
 Hi! We are SB19 A'tin Fanboys, a community of SB19 supporters. We would love to have [BRAND NAME] as one of the Ninangs of GAME TIME: The Never Growing Old SSOB's Birthday Celebration, a fan-organized party for Josh of SB19.
 
-A'TIN are loyal to the brands that support SB19. Being a Ninang puts [BRAND NAME] in front of about 100 of the most active fans in one room, plus everyone who follows the event online.
+A'TIN are loyal to the brands that support SB19. Being a Ninang puts [BRAND NAME] in front of 125 of the most active fans in one room, plus everyone who follows the event online.
 
 EVENT DETAILS
 Event: GAME TIME: The Never Growing Old SSOB's Birthday Celebration
 Date: Saturday, November 14, 2026, 5:00 PM onwards
 Venue: Teaspoon Cafe, 5B & 6A Juan Luna Street, Gagalangin, Tondo, Manila
-Attendees: about 100 registered A'TIN, fanboys and fangirls
+Attendees: 125 A'TIN, fanboys and fangirls
 Organizer: SB19 A'tin Fanboys
 
 Our guests are A'TIN fan accounts with big followings who share fan events with their audiences:
 Ace Agoncillo, Boy Panda, Kielskie, Rinacam, Papawolf, GentoBox, Ma Ria, MA1, 1 South and Lloyd.
 
 HOW YOU CAN BE OUR NINANG
-There is no minimum. Whatever [BRAND NAME] can share will be put to good use.
-1. Loot bag items: around 100 pieces of a product, sample or promo item, so every attendee goes home with something from [BRAND NAME].
-2. Prizes: a few items we can give away through games and raffles. The theme is GAME TIME, so the prize rounds are a highlight of the program.
-3. Cash support: any amount helps cover food and venue costs for our volunteers and guests.
-4. Any mix of the above.
+Our main request is a cash sponsorship. It goes straight to the food, venue and program for the celebration, and any amount you are comfortable with makes a real difference. We keep a record of every peso and will gladly send [BRAND NAME] a short report of how your support was used after the event.
+
+If a cash sponsorship is not possible this time, we would be just as grateful for products:
+- Loot bag items: 125 pieces of a product, sample or promo item, so every attendee goes home with something from [BRAND NAME].
+- Prizes: a few items we can give away during the games and raffles. The theme is GAME TIME, so the prize rounds are a highlight of the program.
+
+A mix of cash and products is also very welcome.
 
 WHAT [BRAND NAME] GETS AS OUR NINANG
 - A "Thank you, Ninang" pubmat on our page, with your logo and your page tagged.
 - Your name or logo on the event registration page, which every attendee opens.
 - Shout-outs during the program, and photos of fans with your items, which we will send you after the event.
-- Your products in the hands of fans who make a point of buying from SB19's partner brands.
+- Your brand in front of fans who make a point of supporting SB19's partner brands.
 
 NEXT STEP
-If you would like to join, just reply with what you can share by Saturday, November 7. Items can be delivered to Teaspoon Cafe or we can arrange a pick-up in Metro Manila, whichever is easier for you, by November 12. We are happy to answer questions by phone or Messenger too.
+If you would like to join, please reply by Thursday, November 5 with what [BRAND NAME] can share. For products, our team will pick them up from you on or before Monday, November 9, so there is nothing for you to deliver. We are happy to answer any questions by phone or Messenger.
 
 Thank you for considering this. It would mean a lot to the A'TIN community to celebrate Josh's birthday with [BRAND NAME] as our Ninang.
 
