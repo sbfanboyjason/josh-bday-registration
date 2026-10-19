@@ -26,7 +26,7 @@ const EVENT_CONFIG = {
 
   PRICE_PER_TICKET: 549,
   CURRENCY: '₱',
-  TICKET_INCLUSIONS_NOTE: 'Per head, food at Teaspoon Cafe included.',
+  TICKET_INCLUSIONS_NOTE: 'Per head. Includes food, BBQ and freebies.',
 
   // Paste the /exec URL of the NEW Apps Script deployment here (see SETUP.md).
   BACKEND_URL: 'REPLACE_WITH_YOUR_APPS_SCRIPT_EXEC_URL',
@@ -50,7 +50,7 @@ const EVENT_CONFIG = {
       'How do I get to Teaspoon Cafe?',
       '<p>Teaspoon Cafe is at 5B &amp; 6A Juan Luna Street, Gagalangin, Tondo, Manila. ' +
         '<a href="https://www.google.com/maps/search/?api=1&query=Teaspoon%20Cafe%2C%205B%20%26%206A%20Juan%20Luna%20Street%2C%20Gagalangin%2C%20Tondo%2C%20Manila" target="_blank" rel="noopener">Open it in Google Maps</a>.</p>' +
-        '<p><strong>By train:</strong> take LRT-1 to R. Papa Station, the closest stop. From there, ride a tricycle or e-trike to Juan Luna Street in Gagalangin, or walk about 15 to 20 minutes.</p>' +
+        '<p><strong>By train:</strong> take LRT-1 to <strong>R. Papa</strong> or <strong>Abad Santos</strong> Station. Both have tricycles and e-trikes outside; ask for Juan Luna Street in Gagalangin. From R. Papa you can also walk, about 15 to 20 minutes.</p>' +
         '<p><strong>By Grab, Joyride or Angkas:</strong> set your drop-off to "Teaspoon Cafe Juan Luna".</p>' +
         '<p>If you are coming from far, give yourself extra time. Saturday evening traffic around Tondo can be heavy.</p>',
     ],
@@ -64,7 +64,7 @@ const EVENT_CONFIG = {
     ],
     [
       'What does the ₱549 include?',
-      '<p>Your slot at the celebration and your food at Teaspoon Cafe.</p>',
+      '<p>Your slot at the celebration, food at Teaspoon Cafe, BBQ, freebies, and a night with fellow A\'TIN celebrating SSOB.</p>',
     ],
     [
       'Can I register for my friends too?',
@@ -118,7 +118,7 @@ const EVENT_CONFIG = {
   TERMS_HTML: `
     <p><strong>Terms & Conditions</strong></p>
     <ul>
-      <li>The registration fee is <strong>₱549 per head</strong> and includes your food at the venue.</li>
+      <li>The registration fee is <strong>₱549 per head</strong> and includes your food, BBQ and freebies at the venue.</li>
       <li>All registrations are <strong>non-refundable</strong>, but <strong>transferable</strong> to
       another person, provided the original registrant informs the organizers before the event.</li>
       <li>Registration is only confirmed once payment has been manually verified by the organizers. Until

@@ -88,7 +88,7 @@ const CONFIG = {
     '<ul>' +
     '<li>Your registration is <strong>non-refundable but transferable</strong>. Tell us in advance if someone else will use it.</li>' +
     '<li>Bring your entry QR code and a valid ID matching the registered name (or the name of the person it was transferred to).</li>' +
-    '<li>Your registration includes your food at the venue.</li>' +
+    '<li>Your registration includes food, BBQ and freebies at the venue.</li>' +
     '<li>This is an independently organized fan celebration, not an official SB19 or management event.</li>' +
     '</ul>',
 };
@@ -1515,10 +1515,10 @@ function sendApprovalEmailWithQr(rowObj) {
       'Show this QR code at the door. A screenshot on your phone works.',
       'Bring a valid ID with the same name as above. We check every QR and ID at the entrance.',
       'Doors open at 5:00 PM. Coming early keeps the line short.',
-      'Getting there: the nearest train stop is LRT-1 R. Papa Station; from there take a tricycle or e-trike to Juan Luna Street, Gagalangin. Parking is free but limited, so commuting or booking a ride is best.',
+      'Getting there: take LRT-1 to R. Papa or Abad Santos Station, then a tricycle or e-trike to Juan Luna Street, Gagalangin. Parking is free but limited, so commuting or booking a ride is best.',
       isFree
-        ? 'Your pass includes your food at ' + escapeHtml_(CONFIG.VENUE) + '.'
-        : 'Your ' + escapeHtml_(amount || 'registration') + ' covers your food at ' + escapeHtml_(CONFIG.VENUE) + '.',
+        ? 'Your pass includes food, BBQ and freebies.'
+        : 'Your ' + escapeHtml_(amount || 'registration') + ' covers your food, BBQ and freebies.',
       isFree
         ? 'This pass is for you only. If you can\'t make it, please tell the team so someone else can use the slot.'
         : 'Can\'t make it? Your slot is transferable. Email us before the event with the full name of the person taking your place.',
