@@ -34,7 +34,7 @@ What changed from the screening:
 7. Josh Birthday Admin > Install Automated Triggers (run once).
 8. Josh Birthday Admin > Set Up Event Check-in. This creates the `_Staff` tab and shows each person's 6-digit PIN once. Screenshot it. Rename Team 1 to Team 4 in `_Staff` if you like, and set Role to Admin for anyone else who should add or remove free passes.
 9. Josh Birthday Admin > Set Up Sponsors Sheet, then Load SB19 Brand Partners into Sponsors.
-10. Josh Birthday Admin > Build / Refresh Dashboard.
+10. Josh Birthday Admin > Build / Refresh Dashboard. This also creates the Guests, Admin and Volunteers tabs in the sheet (one per free-pass type). They list active passes and update by themselves. Add and remove passes on the team dashboard, not in these tabs.
 11. Deploy > New deployment > type Web app. Execute as: Me. Who has access: Anyone. Deploy and copy the `/exec` URL.
 12. Paste that URL into `BACKEND_URL` in `assets/config.js` and push. The registration page, scanner and dashboard all read it from there.
 

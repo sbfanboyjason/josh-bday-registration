@@ -383,6 +383,7 @@ function onOpen() {
     .addItem('Initialize / Reset Sheet Structure', 'initializeSheet')
     .addItem('Install Automated Triggers (run once)', 'installTriggers')
     .addItem('Build / Refresh Dashboard', 'buildDashboard')
+    .addItem('Build / Refresh Guests, Admin, Volunteers Tabs', 'buildFreePassTabs')
     .addItem('Print Attendee List (Approved + Free Passes)', 'showAttendeeListDialog')
     .addItem('Send Waiting QR Emails Now', 'sendQrEmailsNow')
     .addSeparator()
@@ -2228,6 +2229,52 @@ function buildDashboard() {
   protectSheetOwnerOnly_(sheet, 'Dashboard - restricted to owner only');
 
   SpreadsheetApp.getUi().alert('Dashboard built. It updates on its own as registrations and free passes change.');
+  buildFreePassTabs(true);
+}
+
+/**
+ * One sheet tab per free-pass type (Guests, Admin, Volunteers). Each tab is a
+ * live view of the Registrations tab, so it updates by itself when a pass is
+ * added or removed on the dashboard. Do not type in these tabs: add and remove
+ * passes on the team dashboard instead.
+ */
+const FREE_PASS_TABS = [
+  ['Guests', ATTENDEE_TYPE.GUEST],
+  ['Admin', ATTENDEE_TYPE.ADMIN],
+  ['Volunteers', ATTENDEE_TYPE.VOLUNTEER],
+];
+const FREE_PASS_TAB_COLUMNS = [
+  'Registration ID', 'First Name', 'Last Name', 'Email Address', 'Phone Number',
+  'Facebook Link', 'Status', 'Checked In', 'Admin Notes', 'Timestamp',
+];
+
+function buildFreePassTabs(silent) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const R = "'" + CONFIG.SHEET_NAME + "'!";
+  const select = FREE_PASS_TAB_COLUMNS.map(function (h) { return colLetter_(h); }).join(',');
+  const typeCol = colLetter_('Attendee Type');
+  const statusCol = colLetter_('Status');
+  const lastCol = colLetter_('Last Updated');
+  FREE_PASS_TABS.forEach(function (t, i) {
+    const name = t[0];
+    const type = t[1];
+    let sheet = ss.getSheetByName(name);
+    if (!sheet) sheet = ss.insertSheet(name);
+    sheet.clear();
+    sheet.getRange(1, 1).setValue(name + ': free passes. This tab updates by itself. To add or remove someone, use the team dashboard.');
+    sheet.getRange(1, 1).setFontWeight('bold').setFontColor('#d1124f');
+    sheet.getRange(2, 1).setFormula('=COUNTIFS(' + R + typeCol + '2:' + typeCol + ',"' + type + '",' + R + statusCol + '2:' + statusCol + ',"' + STATUS.APPROVED + '")&" active pass(es)"');
+    sheet.getRange(4, 1).setFormula('=QUERY(' + R + 'A1:' + lastCol + ', "select ' + select +
+      " where " + typeCol + " = '" + type + "' and " + statusCol + " = '" + STATUS.APPROVED + "' order by " + colLetter_('Last Name') + ' asc", 1)');
+    sheet.getRange(4, 1, 1, FREE_PASS_TAB_COLUMNS.length).setFontWeight('bold').setBackground('#ffe9f2');
+    sheet.setFrozenRows(4);
+    sheet.setTabColor(['#ff6fae', '#d1124f', '#2e7d46'][i]);
+  });
+  if (silent !== true) {
+    try {
+      SpreadsheetApp.getUi().alert('Guests, Admin and Volunteers tabs are ready. They list active free passes and update by themselves.');
+    } catch (e) { /* no UI when run from the editor or a trigger */ }
+  }
 }
 
 /** Fully protects a sheet, leaving only the spreadsheet owner able to edit it. */
