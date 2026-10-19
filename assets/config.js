@@ -29,7 +29,7 @@ const EVENT_CONFIG = {
   TICKET_INCLUSIONS_NOTE: 'Per head. Includes food and freebies.',
 
   // Paste the /exec URL of the NEW Apps Script deployment here (see SETUP.md).
-  BACKEND_URL: 'REPLACE_WITH_YOUR_APPS_SCRIPT_EXEC_URL',
+  BACKEND_URL: 'https://script.google.com/macros/s/AKfycbxypSCPaFIioMegumJiGaw74qA9XIXfTZk4jrjRG1AAYkTDVbgjctl2NtFSfeNqDvDq/exec',
 
   // GCash only.
   PAYMENT_CHANNELS: [
