@@ -56,7 +56,7 @@
     const hintEl = document.getElementById('slotHint');
 
     if (cfg.BACKEND_URL.indexOf('REPLACE_WITH') === 0) {
-      countEl.textContent = `${cfg.TOTAL_CAP} tickets total`;
+      countEl.textContent = `${cfg.TOTAL_CAP} slots total`;
       hintEl.textContent = 'Live count unavailable until the backend URL is configured.';
       remainingSlots = cfg.TOTAL_CAP;
       updateQtyLimits();
@@ -86,26 +86,13 @@
       });
   }
 
-  function effectiveMaxQty() {
-    if (remainingSlots === null) return cfg.MAX_TICKETS_PER_REGISTRATION;
-    return Math.min(remainingSlots, cfg.MAX_TICKETS_PER_REGISTRATION);
-  }
-
+  // One registration = one person, so the amount is always one fee.
   function updateQtyLimits() {
-    const qtyInput = document.getElementById('ticketQuantity');
-    const cap = effectiveMaxQty();
-    qtyInput.max = cap;
-    if (remainingSlots !== null) {
-      document.getElementById('qtyHint').textContent =
-        remainingSlots > 0
-          ? `Up to ${cap} per registration (max ${cfg.MAX_TICKETS_PER_REGISTRATION}), ${remainingSlots} total available right now.`
-          : 'Sold out.';
-    }
     updateAmountDue();
   }
 
   function updateAmountDue() {
-    const qty = Number(document.getElementById('ticketQuantity').value) || 0;
+    const qty = 1;
     const amountEl = document.getElementById('amountDue');
     if (!cfg.PRICE_PER_TICKET) {
       amountEl.textContent = 'Price per ticket to be announced';
@@ -203,6 +190,28 @@
     });
   }
 
+  // ---------- Facebook link ----------
+  // Accepts "facebook.com/jeizone", "https://www.facebook.com/jeizone",
+  // "m.facebook.com/...", "fb.com/..." or profile.php?id=... and returns a
+  // clean https://facebook.com/... link, or '' if it isn't a Facebook link.
+  function normalizeFacebook(raw) {
+    let v = String(raw || '').trim();
+    if (!v) return '';
+    if (!/^https?:\/\//i.test(v)) v = 'https://' + v;
+    let u;
+    try { u = new URL(v); } catch (e) { return ''; }
+    const host = u.hostname.toLowerCase().replace(/^(www|m|web|mbasic)\./, '');
+    if (host !== 'facebook.com' && host !== 'fb.com') return '';
+    const path = u.pathname.replace(/\/+$/, '');
+    if (!path || path === '/') return '';
+    if (/^\/profile\.php$/i.test(path)) {
+      const id = u.searchParams.get('id');
+      return id && /^\d+$/.test(id) ? 'https://facebook.com/profile.php?id=' + id : '';
+    }
+    if (!/^\/[A-Za-z0-9.\-_/]+$/.test(path)) return '';
+    return 'https://facebook.com' + path;
+  }
+
   // ---------- Validation ----------
   function setFieldError(fieldId, hasError) {
     document.getElementById(fieldId).classList.toggle('invalid', hasError);
@@ -232,11 +241,15 @@
       valid = false;
     } else setFieldError('field-phone', false);
 
-    const qty = Number(values.ticketQuantity);
-    if (!qty || qty < 1 || qty > effectiveMaxQty()) {
-      setFieldError('field-qty', true);
+    if (values.fanType !== 'Fanboy' && values.fanType !== 'Fangirl') {
+      setFieldError('field-fanType', true);
       valid = false;
-    } else setFieldError('field-qty', false);
+    } else setFieldError('field-fanType', false);
+
+    if (!normalizeFacebook(values.facebook)) {
+      setFieldError('field-facebook', true);
+      valid = false;
+    } else setFieldError('field-facebook', false);
 
     if (!selectedChannelId) {
       valid = false;
@@ -297,10 +310,11 @@
     document.getElementById('confirmChannel').textContent = channelLabel(selectedChannelId);
     document.getElementById('confirmReference').textContent = values.paymentReference;
 
-    const qty = Number(values.ticketQuantity) || 0;
+    document.getElementById('confirmFan').textContent = values.fanType;
+    document.getElementById('confirmFacebook').textContent = normalizeFacebook(values.facebook);
     document.getElementById('confirmAmount').textContent = cfg.PRICE_PER_TICKET
-      ? `${cfg.CURRENCY}${(qty * cfg.PRICE_PER_TICKET).toLocaleString()} (${qty} ticket${qty === 1 ? '' : 's'})`
-      : `${qty} ticket${qty === 1 ? '' : 's'}`;
+      ? `${cfg.CURRENCY}${cfg.PRICE_PER_TICKET.toLocaleString()} (1 person)`
+      : '1 person';
 
     const thumb = document.getElementById('confirmScreenshotThumb');
     const uploadedPreview = document.getElementById('uploadPreview');
@@ -345,7 +359,9 @@
         lastName: values.lastName,
         email: values.email,
         phone: values.phone,
-        ticketQuantity: values.ticketQuantity,
+        ticketQuantity: 1,
+        fanType: values.fanType,
+        facebook: normalizeFacebook(values.facebook),
         paymentChannel: selectedChannelId,
         paymentReference: values.paymentReference,
         paymentScreenshotBase64: screenshotBase64,
@@ -398,7 +414,8 @@
         lastName: document.getElementById('lastName').value.trim().replace(/\s+/g, ' '),
         email: document.getElementById('email').value.trim(),
         phone: document.getElementById('phone').value.trim(),
-        ticketQuantity: document.getElementById('ticketQuantity').value,
+        fanType: (document.querySelector('input[name="fanType"]:checked') || {}).value || '',
+        facebook: document.getElementById('facebook').value.trim(),
         paymentReference: document.getElementById('paymentReference').value.trim(),
       };
 
@@ -423,7 +440,6 @@
       doActualSubmit(pendingValues);
     });
 
-    document.getElementById('ticketQuantity').addEventListener('input', updateAmountDue);
   }
 
   // ---------- Sponsors strip ----------

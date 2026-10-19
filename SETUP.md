@@ -4,7 +4,8 @@ This is a copy of the Wakas at Simula block screening system, changed for SSOB's
 
 What changed from the screening:
 
-- First name and last name are separate fields. The sheet also keeps a combined Full Legal Name column, which the emails, the printed list and the scanner use.
+- Individual registration: one person per form, no ticket quantity. Each attendee registers and pays ₱549 on their own.
+- First name and last name are separate fields. The form also asks Fanboy or Fangirl and the person's Facebook profile link (any format like facebook.com/jeizone is cleaned up to https://facebook.com/jeizone). The sheet also keeps a combined Full Legal Name column, which the emails, the printed list and the scanner use.
 - Fee is ₱549 per head. Capacity is 100 heads in total.
 - New Attendee Type column: Registrant (paid), Guest, Admin, Volunteer. The last three are free passes added from the team dashboard. They need no form and no payment, they get a QR code, and each takes one seat.
 - New team dashboard at `/dashboard/` with tabs for Overview, Registrants, Guests, Admin and Volunteers, plus a budget monitor.

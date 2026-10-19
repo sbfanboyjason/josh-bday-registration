@@ -324,15 +324,16 @@
     var shown = rows.filter(function (r) {
       if (!showAll && !isActive(r)) return false;
       if (!q) return true;
-      return (r.firstName + ' ' + r.lastName + ' ' + r.regId).toLowerCase().indexOf(q) !== -1;
+      return (r.firstName + ' ' + r.lastName + ' ' + r.regId + ' ' + (r.facebook || '') + ' ' + (r.fanType || '')).toLowerCase().indexOf(q) !== -1;
     });
 
     var active = rows.filter(isActive);
-    var heads = active.reduce(function (a, r) { return a + r.qty; }, 0);
     var free = FREE_TYPES.indexOf(type) !== -1;
     $('listSummary').textContent = free
       ? active.length + ' active ' + plural(active.length, 'pass', 'passes') + (budget ? ' · ' + peso(active.length * budget.costPerHead) + ' venue cost' : '')
-      : active.length + ' active ' + plural(active.length, 'registration') + ' · ' + heads + ' ' + plural(heads, 'head');
+      : active.length + ' active ' + plural(active.length, 'registration') + ' · ' +
+        active.filter(function (r) { return r.fanType === 'Fanboy'; }).length + ' fanboys, ' +
+        active.filter(function (r) { return r.fanType === 'Fangirl'; }).length + ' fangirls';
 
     $('listEmpty').hidden = shown.length > 0;
 
@@ -356,7 +357,7 @@
       var meta = document.createElement('div');
       meta.className = 'person-meta';
       var bits = [r.regId];
-      if (!free) bits.push(r.qty + ' ' + plural(r.qty, 'head'));
+      if (r.fanType) bits.push(r.fanType);
       if (r.email) bits.push(r.email);
       if (r.phone) bits.push(r.phone);
       if (free && r.note) {
@@ -368,6 +369,18 @@
       li.appendChild(name);
       li.appendChild(pill);
       li.appendChild(meta);
+
+      if (r.facebook && /^https:\/\/facebook\.com\//.test(r.facebook)) {
+        var fb = document.createElement('div');
+        fb.className = 'person-meta sp-tie';
+        var a = document.createElement('a');
+        a.href = r.facebook;
+        a.target = '_blank';
+        a.rel = 'noopener';
+        a.textContent = r.facebook.replace('https://', '');
+        fb.appendChild(a);
+        li.appendChild(fb);
+      }
 
       if (free && isAdmin() && r.status === 'Approved' && r.key) {
         var actions = document.createElement('div');

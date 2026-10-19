@@ -94,7 +94,7 @@
             <div class="error">Please enter your last name.</div>
           </div>
         </div>
-        <div class="hint" style="margin:-8px 0 16px">Exactly as on a valid government ID. This must match at entry.</div>
+        <div class="name-hint">Exactly as on a valid government ID. This must match at entry.</div>
 
         <div class="field" id="field-email">
           <label for="email">Valid Email Address</label>
@@ -110,15 +110,27 @@
           <div class="error">Please enter a valid Philippine mobile number.</div>
         </div>
 
-        <div class="field" id="field-qty">
-          <label for="ticketQuantity">Number of Tickets</label>
-          <input type="number" id="ticketQuantity" name="ticketQuantity" min="1" value="1" required />
-          <div class="hint" id="qtyHint"></div>
-          <div class="error">Please enter a valid ticket quantity.</div>
+        <fieldset class="field fan-type" id="field-fanType">
+          <legend>I am a</legend>
+          <div class="choice-row">
+            <label class="choice"><input type="radio" name="fanType" value="Fanboy" required /><span>Fanboy</span></label>
+            <label class="choice"><input type="radio" name="fanType" value="Fangirl" /><span>Fangirl</span></label>
+          </div>
+          <div class="error">Please choose Fanboy or Fangirl.</div>
+        </fieldset>
+
+        <div class="field" id="field-facebook">
+          <label for="facebook">Facebook Profile Link</label>
+          <input type="url" id="facebook" name="facebook" inputmode="url" autocomplete="url"
+                 placeholder="facebook.com/jeizone" maxlength="200" required />
+          <div class="hint">Copy it from your Facebook profile, e.g. facebook.com/jeizone</div>
+          <div class="error">Please enter your Facebook profile link, e.g. facebook.com/jeizone</div>
         </div>
 
+        <p class="hint one-per-person">One registration is for one person. Each attendee registers on their own.</p>
+
         <div class="amount-due" id="amountDue"></div>
-        <div class="hint" id="ticketInclusionsNote" style="text-align:center; margin-top:-10px; margin-bottom:4px"></div>
+        <div class="name-hint" id="ticketInclusionsNote" style="text-align:center; margin:-10px 0 4px"></div>
       </div>
 
       <!-- Payment -->
@@ -222,6 +234,12 @@
       <div class="confirm-value" id="confirmPhone"></div>
       <div class="confirm-note">We'll use this number to reach you directly if we ever have a question
       about your registration.</div>
+    </div>
+
+    <div class="confirm-section">
+      <div class="confirm-label">Fanboy / Fangirl · Facebook</div>
+      <div class="confirm-value" id="confirmFan"></div>
+      <div class="confirm-value" id="confirmFacebook" style="font-weight:500;font-size:0.9rem"></div>
     </div>
 
     <div class="confirm-section">

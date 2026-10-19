@@ -96,6 +96,8 @@ function dashRow_(row, staff) {
     lastName: String(c('Last Name') || ''),
     name: String(c('Full Legal Name') || ''),
     qty: Number(c('Ticket Quantity')) || 0,
+    fanType: String(c('Fan Type') || ''),
+    facebook: String(c('Facebook Link') || ''),
     status: String(c('Status') || ''),
     checkedIn: String(c('Checked In') || '').toLowerCase() === 'yes',
     note: String(c('Admin Notes') || ''),

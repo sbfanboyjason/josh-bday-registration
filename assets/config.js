@@ -21,7 +21,8 @@ const EVENT_CONFIG = {
   // free passes added from the team dashboard.
   TOTAL_CAP: 100,
 
-  MAX_TICKETS_PER_REGISTRATION: 10,
+  // Individual registration: one person per form.
+  MAX_TICKETS_PER_REGISTRATION: 1,
 
   PRICE_PER_TICKET: 549,
   CURRENCY: '₱',
@@ -45,7 +46,8 @@ const EVENT_CONFIG = {
   DPA_NOTICE_HTML: `
     <p><strong>Data Privacy Notice</strong></p>
     <p>By registering, you allow the organizers of GAME TIME: The Never Growing Old SSOB's Birthday Celebration
-    to collect and process your first and last name, email address, mobile number, ticket quantity, and payment
+    to collect and process your first and last name, email address, mobile number, whether you are a fanboy or
+    fangirl, your Facebook profile link, and payment
     verification details (reference number and screenshot), and on the event date a photo of your ID, solely for
     the purposes of:</p>
     <ul>
@@ -72,9 +74,10 @@ const EVENT_CONFIG = {
       another person, provided the original registrant informs the organizers before the event.</li>
       <li>Registration is only confirmed once payment has been manually verified by the organizers. Until
       then, your status remains "Pending Payment Verification."</li>
-      <li>If a problem is found with your payment (e.g. amount does not match your ticket quantity, or
+      <li>One registration is for one person. Each attendee registers and pays on their own.</li>
+      <li>If a problem is found with your payment (e.g. the amount is not ₱549, or
       the reference number cannot be verified), you will be notified by email and given 24 hours to send
-      corrected proof. If uncorrected after 24 hours, your reserved slot(s) are automatically released
+      corrected proof. If uncorrected after 24 hours, your reserved slot is automatically released
       to other registrants.</li>
       <li>Entry on the event date requires the QR code sent upon approval, and a valid ID matching the
       registered name (or the name of the person the ticket was transferred to, if pre-notified).</li>

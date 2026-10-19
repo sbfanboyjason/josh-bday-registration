@@ -62,7 +62,9 @@ const CONFIG = {
   REGISTRATION_FEE: 549,
   VENUE_COST_PER_HEAD: 495,
 
-  MAX_TICKETS_PER_REGISTRATION: 10,
+  // Individual registration: one person per form. Ticket Quantity stays in
+  // the sheet (always 1) so the seat count and check-in keep working.
+  MAX_TICKETS_PER_REGISTRATION: 1,
 
   CORRECTION_WINDOW_HOURS: 24,
 
@@ -112,6 +114,28 @@ const ATTENDEE_TYPE = {
 };
 const FREE_TYPES = [ATTENDEE_TYPE.GUEST, ATTENDEE_TYPE.ADMIN, ATTENDEE_TYPE.VOLUNTEER];
 
+const FAN_TYPES = ['Fanboy', 'Fangirl'];
+
+/**
+ * "facebook.com/jeizone", "https://www.facebook.com/jeizone/", "m.facebook.com/x",
+ * "fb.com/x" or "facebook.com/profile.php?id=123" -> "https://facebook.com/...".
+ * Returns '' when it is not a Facebook profile link.
+ */
+function normalizeFacebook_(raw) {
+  let v = String(raw || '').trim();
+  if (!v) return '';
+  const m = v.match(/^(?:https?:\/\/)?(?:(?:www|m|web|mbasic)\.)?(facebook\.com|fb\.com)(\/[^?#\s]*)?(\?[^#\s]*)?/i);
+  if (!m) return '';
+  const path = (m[2] || '').replace(/\/+$/, '');
+  if (!path) return '';
+  if (/^\/profile\.php$/i.test(path)) {
+    const id = (m[3] || '').match(/[?&]id=(\d+)/);
+    return id ? 'https://facebook.com/profile.php?id=' + id[1] : '';
+  }
+  if (!/^\/[A-Za-z0-9.\-_\/]+$/.test(path)) return '';
+  return 'https://facebook.com' + path;
+}
+
 // Registration ID prefix per attendee type.
 const REG_ID_PREFIX = {
   Registrant: 'JB',
@@ -136,6 +160,8 @@ const HEADERS = [
   'Full Legal Name',
   'Email Address',
   'Phone Number',
+  'Fan Type',
+  'Facebook Link',
   'Ticket Quantity',
   'Payment Channel',
   'Payment Reference No.',
@@ -223,6 +249,10 @@ function initializeSheet() {
     .setAllowInvalid(false)
     .build();
   sheet.getRange(2, statusCol, 2000, 1).setDataValidation(rule);
+
+  sheet.getRange(2, HEADERS.indexOf('Fan Type') + 1, 2000, 1).setDataValidation(
+    SpreadsheetApp.newDataValidation().requireValueInList(FAN_TYPES, true).setAllowInvalid(true).build()
+  );
 
   const typeCol = HEADERS.indexOf('Attendee Type') + 1;
   sheet.getRange(2, typeCol, 2000, 1).setDataValidation(
@@ -386,6 +416,7 @@ function computeBudgetFrom_(data, fee, cost, capacity, sponsorCash) {
     paidConfirmed: 0,
     paidPending: 0,
     free: { Guest: 0, Admin: 0, Volunteer: 0 },
+    fanType: { Fanboy: 0, Fangirl: 0 },
     freeTotal: 0,
     checkedIn: 0,
   };
@@ -406,6 +437,9 @@ function computeBudgetFrom_(data, fee, cost, capacity, sponsorCash) {
     }
     if (status === STATUS.APPROVED) b.paidConfirmed += qty;
     else if (status === STATUS.PENDING || status === STATUS.NEEDS_CORRECTION) b.paidPending += qty;
+    else continue;
+    const fan = String(row[HEADERS.indexOf('Fan Type')] || '');
+    if (fan in b.fanType) b.fanType[fan] += qty;
   }
 
   const m = b.marginPerPaid;
@@ -523,7 +557,7 @@ function handleNewRegistration(e) {
     const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(CONFIG.SHEET_NAME);
     const cap = getVenueCapacity();
     const claimed = getClaimedTicketCount(sheet);
-    const requestedQty = Number(payload.ticketQuantity);
+    const requestedQty = 1; // individual registration
 
     if (claimed + requestedQty > cap) {
       const remaining = Math.max(0, cap - claimed);
@@ -532,7 +566,7 @@ function handleNewRegistration(e) {
         error:
           remaining === 0
             ? 'All slots have been claimed. Registration is now closed.'
-            : `Only ${remaining} slot(s) remaining. Please lower your ticket quantity.`,
+            : `Only ${remaining} slot(s) remaining.`,
       });
     }
 
@@ -564,6 +598,8 @@ function handleNewRegistration(e) {
       sanitizeForSheet_(payload.fullName),
       sanitizeForSheet_(payload.email),
       sanitizeForSheet_(payload.phone),
+      payload.fanType,
+      payload.facebook,
       requestedQty,
       sanitizeForSheet_(payload.paymentChannel) || '',
       sanitizeForSheet_(payload.paymentReference) || '',
@@ -751,12 +787,14 @@ function validateRegistration(payload) {
   if (!/^(\+?63|0)9\d{9}$/.test(cleanedPhone)) {
     return 'A valid Philippine mobile number is required (e.g. 09171234567).';
   }
-  if (!payload.ticketQuantity || Number(payload.ticketQuantity) < 1) {
-    return 'Ticket quantity must be at least 1.';
+  if (FAN_TYPES.indexOf(payload.fanType) === -1) {
+    return 'Please choose Fanboy or Fangirl.';
   }
-  if (Number(payload.ticketQuantity) > CONFIG.MAX_TICKETS_PER_REGISTRATION) {
-    return `A single registration can claim at most ${CONFIG.MAX_TICKETS_PER_REGISTRATION} tickets.`;
+  payload.facebook = normalizeFacebook_(payload.facebook);
+  if (!payload.facebook) {
+    return 'Please enter your Facebook profile link, e.g. facebook.com/jeizone';
   }
+  payload.ticketQuantity = 1;
   if (!payload.paymentChannel) return 'Please select a payment channel.';
   if (!payload.paymentReference) return 'Please enter your payment reference number.';
   if (!payload.paymentScreenshotBase64) return 'Please upload a screenshot of your payment.';
@@ -1343,7 +1381,8 @@ function sendPendingConfirmationEmail(payload, regId) {
     infoRow_('Full Name', escapeHtml_(payload.fullName)) +
     infoRow_('Email', escapeHtml_(payload.email)) +
     infoRow_('Phone', escapeHtml_(payload.phone)) +
-    infoRow_('Tickets', '<strong>' + escapeHtml_(payload.ticketQuantity) + '</strong>') +
+    infoRow_('Fanboy / Fangirl', escapeHtml_(payload.fanType)) +
+    infoRow_('Facebook', escapeHtml_(payload.facebook)) +
     (amount ? infoRow_('Amount Due', '<strong>' + amount + '</strong>') : '') +
     infoRow_('Payment Channel', escapeHtml_(payload.paymentChannel)) +
     infoRow_('Reference No.', escapeHtml_(payload.paymentReference));
@@ -1380,7 +1419,7 @@ function sendPendingConfirmationEmail(payload, regId) {
     htmlBody: shell.html,
     body:
       `Hi ${payload.fullName},\n\nWe've received your registration (${regId}) for ${CONFIG.EVENT_NAME}. ` +
-      `Status: Pending Payment Verification. Tickets: ${payload.ticketQuantity}. Please view this email in ` +
+      `Status: Pending Payment Verification. Please view this email in ` +
       `an HTML-capable mail app for full details.\n\n— ${CONFIG.SENDER_DISPLAY_NAME}`,
     name: CONFIG.SENDER_DISPLAY_NAME,
     inlineImages: shell.inlineImages,
@@ -1415,7 +1454,7 @@ function sendApprovalEmailWithQr(rowObj) {
 
   const rows =
     infoRow_('Registration ID', '<strong>' + escapeHtml_(regId) + '</strong>') +
-    infoRow_('Tickets', '<strong>' + escapeHtml_(rowObj['Ticket Quantity']) + '</strong>') +
+    infoRow_('Name', '<strong>' + escapeHtml_(rowObj['Full Legal Name']) + '</strong>') +
     (amount ? infoRow_('Amount Paid', '<strong>' + amount + '</strong>') : '') +
     (isFree ? infoRow_('Pass', '<strong>' + escapeHtml_(type) + ' (complimentary)</strong>') : '') +
     infoRow_('Event', escapeHtml_(CONFIG.EVENT_NAME)) +
@@ -1485,7 +1524,7 @@ function sendMismatchNoticeEmail(rowObj, deadline) {
 
   const rows =
     infoRow_('Registration ID', '<strong>' + escapeHtml_(regId) + '</strong>') +
-    infoRow_('Tickets', escapeHtml_(rowObj['Ticket Quantity'])) +
+    infoRow_('Name', escapeHtml_(rowObj['Full Legal Name'])) +
     infoRow_('Reference on File', escapeHtml_(rowObj['Payment Reference No.']));
 
   const fixSection = link
@@ -1505,7 +1544,7 @@ function sendMismatchNoticeEmail(rowObj, deadline) {
   const bodyHtml =
     '<p>Hi <strong>' + escapeHtml_(rowObj['Full Legal Name']) + '</strong>,</p>' +
     '<p>We found an issue verifying the payment for your registration — most commonly this means the ' +
-    'amount paid doesn\'t match the ticket quantity, or we couldn\'t match your reference number.</p>' +
+    'amount paid isn\'t the ₱549 registration fee, or we couldn\'t match your reference number.</p>' +
     infoBox_(rows) +
     warningBox_(
       'You have until <strong>' +
@@ -1542,7 +1581,7 @@ function sendCorrectionReceivedEmail(rowObj) {
   const regId = rowObj['Registration ID'];
   const rows =
     infoRow_('Registration ID', '<strong>' + escapeHtml_(regId) + '</strong>') +
-    infoRow_('Tickets', escapeHtml_(rowObj['Ticket Quantity'])) +
+    infoRow_('Name', escapeHtml_(rowObj['Full Legal Name'])) +
     infoRow_('Reference No.', escapeHtml_(rowObj['Payment Reference No.']));
 
   const bodyHtml =

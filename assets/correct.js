@@ -84,7 +84,7 @@
           verifiedEmail = email;
 
           document.getElementById('lookupSummary').innerHTML =
-            `<strong>${escapeHtml(data.fullName)}</strong> — ${escapeHtml(data.ticketQuantity)} ticket(s)<br>` +
+            `<strong>${escapeHtml(data.fullName)}</strong><br>` +
             `Current status: ${escapeHtml(data.status)}<br>` +
             `Current reference on file: ${escapeHtml(data.currentReference) || '(none)'}`;
 
