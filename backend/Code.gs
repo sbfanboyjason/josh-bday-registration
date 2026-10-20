@@ -98,6 +98,15 @@ const CONFIG = {
     '<li>Your registration includes food and freebies at the venue.</li>' +
     '<li>This is an independently organized fan celebration, not an official SB19 or management event.</li>' +
     '</ul>',
+
+  // House rules for free passes (Guest, Admin, Volunteer), used in the pass email.
+  FREE_PASS_TERMS_HTML:
+    '<ul>' +
+    '<li>This pass is <strong>for you only</strong> and cannot be given to someone else. Tell the team early if you cannot come.</li>' +
+    '<li>Bring your entry QR code and a valid ID with the name on this pass.</li>' +
+    '<li>Your pass includes food and freebies at the venue.</li>' +
+    '<li>This is an independently organized fan celebration, not an official SB19 or management event.</li>' +
+    '</ul>',
 };
 
 const STATUS = {
@@ -1632,7 +1641,7 @@ function buildEmailShell_(options) {
     'color:rgba(255,233,242,0.55);font-size:12px;line-height:1.8;border-top:1px solid rgba(255,111,174,0.2);">' +
     '<strong style="color:#ff6fae;">' +
     escapeHtml_(CONFIG.EVENT_DATE_DISPLAY) +
-    '</strong> — ' +
+    '</strong> · ' +
     escapeHtml_(CONFIG.VENUE) +
     '<br>' + escapeHtml_(CONFIG.VENUE_ADDRESS) +
     '<br>Questions? Email <a href="mailto:' +
@@ -1844,8 +1853,13 @@ function sendApprovalEmailWithQr(rowObj) {
   const bodyHtml =
     '<p>Hi ' + hi + ',</p>' +
     (isFree
-      ? '<p>You are on the GAME TIME list with a <strong>' + escapeHtml_(type) + ' pass</strong>. No payment needed. ' +
-        'Thank you for helping us celebrate SSOB! 🎉</p>'
+      ? '<p>You are on the GAME TIME list with ' + (/^[AEIOU]/i.test(type) ? 'an' : 'a') + ' <strong>' + escapeHtml_(type) + ' pass</strong>. No payment needed. ' +
+        ({
+          Guest: 'We\'re so happy to have you with us as our guest. Thank you for celebrating SSOB with the A\'TIN and BBQs! 🎉',
+          Admin: 'Thank you for all the work behind the scenes. This celebration happens because of you! 🎉',
+          Volunteer: 'Thank you for giving your time to help run the celebration. We couldn\'t do it without you! 🎉',
+        }[type] || 'Thank you for helping us celebrate SSOB! 🎉') + '</p>' +
+        (type === 'Guest' ? '' : '<p>Please come a little before 5:00 PM so the team can brief you before doors open.</p>')
       : '<p>Your payment is verified and your slot is confirmed. <strong>You\'re in!</strong> 🎉 ' +
         'See you on Saturday, November 14 to celebrate SSOB\'s birthday.</p>') +
     infoBox_(rows) +
@@ -1859,9 +1873,9 @@ function sendApprovalEmailWithQr(rowObj) {
     ]) +
     eventBox_() +
     emailFaqHtml_(isFree, amount) +
-    '<p><strong>Terms &amp; Conditions</strong></p>' +
+    '<p><strong>' + (isFree ? 'Pass rules' : 'Terms &amp; Conditions') + '</strong></p>' +
     '<div style="font-size:13px;line-height:1.6;">' +
-    CONFIG.TERMS_SUMMARY_HTML +
+    (isFree ? CONFIG.FREE_PASS_TERMS_HTML : CONFIG.TERMS_SUMMARY_HTML) +
     '</div>' +
     '<p>See you there, A\'TIN and BBQs!</p>';
 

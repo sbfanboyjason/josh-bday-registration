@@ -38,7 +38,7 @@ var SPONSOR_EMAIL = {
     '',
     'A mix of cash and products is also very welcome.',
     '',
-    'WHAT {{BRAND}} GETS AS OUR NINANG',
+    'WHAT YOU GET AS OUR NINANG',
     '- A "Thank you, Ninang" pubmat on our page, with your logo and your page tagged.',
     '- Your name or logo on the event registration page, which every attendee opens.',
     '- Shout-outs during the program, and photos of fans with your items, which we will send you after the event.',
