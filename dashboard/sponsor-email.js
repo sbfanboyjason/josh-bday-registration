@@ -1,19 +1,33 @@
 /**
  * Sponsor invitation template used by the dashboard's "Copy invitation"
  * and "Write in Gmail" buttons. {{BRAND}} is replaced with the sponsor's
- * name. Edit the text here; SPONSOR-EMAIL.md in the repo has the same
- * letter for reference.
+ * name and {{GUESTS}} with the guest list below. Edit the text here;
+ * SPONSOR-EMAIL.md in the repo has the same letter for reference.
  */
 var SPONSOR_EMAIL = {
-  SENDER_NAME: 'SB19 A\'tin Fanboys Team',
   MOBILE: '0924 110 2340',
   EMAIL: 'sbfanboyjason@gmail.com',
-  MESSENGER: 'm.me/sb19atinfanboys',
+  MESSENGER: 'https://m.me/sb19atinfanboys',
+
+  // Big fan accounts attending as guests: [name, Facebook link].
+  // Leave the link empty ('') and the name is listed without one.
+  GUESTS: [
+    ['Ace Agoncillo', ''],
+    ['Boy Panda', ''],
+    ['Kielskie', ''],
+    ['Rinacam', ''],
+    ['Papawolf', ''],
+    ['GentoBox', ''],
+    ['Ma Ria', ''],
+    ['MA1', ''],
+    ['1 South', ''],
+    ['Lloyd', ''],
+  ],
 
   subject: 'Be a Ninang of GAME TIME, SSOB\'s birthday celebration (Nov 14)',
 
   body: [
-    'Dear {{BRAND}} team,',
+    'Dear Ninang {{BRAND}},',
     '',
     'Hi! We are SB19 A\'tin Fanboys, a community of SB19 supporters. We would love to have {{BRAND}} as one of the Ninangs of GAME TIME: The Never Growing Old SSOB\'s Birthday Celebration, a fan-organized party for Josh of SB19.',
     '',
@@ -26,14 +40,15 @@ var SPONSOR_EMAIL = {
     'Attendees: 125 A\'TIN and BBQs, fanboys and fangirls',
     'Organizer: SB19 A\'tin Fanboys',
     '',
-    'Our guests are A\'TIN fan accounts with big followings who share fan events with their audiences:',
-    'Ace Agoncillo, Boy Panda, Kielskie, Rinacam, Papawolf, GentoBox, Ma Ria, MA1, 1 South and Lloyd.',
+    'OUR GUESTS',
+    'These A\'TIN fan accounts with big followings will be with us and share the celebration with their audiences. Their Facebook pages are linked below so you can check them, and we are happy to connect you with any of them if you would like to ask them directly.',
+    '{{GUESTS}}',
     '',
     'HOW YOU CAN BE OUR NINANG',
     'Our main request is a cash sponsorship. It goes straight to the food, venue and program for the celebration, and any amount you are comfortable with makes a real difference. We keep a record of every peso and will gladly send {{BRAND}} a short report of how your support was used after the event.',
     '',
     'If a cash sponsorship is not possible this time, we would be just as grateful for products:',
-    '- Loot bag items: 125 pieces of a product, sample or promo item, so every attendee goes home with something from {{BRAND}}.',
+    '- Loot bag items: 125 or more pieces of a product, sample or promo item, so every attendee goes home with something from {{BRAND}}.',
     '- Prizes: a few items we can give away during the games and raffles. The theme is GAME TIME, so the prize rounds are a highlight of the program.',
     '',
     'A mix of cash and products is also very welcome.',
@@ -45,27 +60,31 @@ var SPONSOR_EMAIL = {
     '- Your brand in front of fans who make a point of supporting SB19\'s partner brands.',
     '',
     'NEXT STEP',
-    'If you would like to join, please reply by Thursday, November 5 with what {{BRAND}} can share. For products, our team will pick them up from you on or before Monday, November 9, so there is nothing for you to deliver. We are happy to answer any questions by phone or Messenger.',
+    'If you would like to join, we would appreciate hearing from you at your earliest convenience, so we can include {{BRAND}} in our pubmats and program. For products, you are welcome to deliver them to us, or our team can pick them up from you, whichever works best for you. We are happy to answer any questions by phone, email or Messenger.',
     '',
     'Thank you for considering this. It would mean a lot to the A\'TIN community to celebrate Josh\'s birthday with {{BRAND}} as our Ninang.',
     '',
     'Sincerely,',
-    '{{SENDER}}',
     'SB19 A\'tin Fanboys',
     'Mobile: {{MOBILE}}',
     'Email: {{EMAIL}}',
     'Messenger: {{MESSENGER}}',
-    '',
-    '#GAMETIME #SB19 #SSOB #ATIN #NINANG',
   ].join('\n'),
+
+  /** The guest list, one per line, with the Facebook link when there is one. */
+  guestLines: function () {
+    return SPONSOR_EMAIL.GUESTS.map(function (g) {
+      return '- ' + g[0] + (g[1] ? ': ' + g[1] : '');
+    }).join('\n');
+  },
 
   /** Personalized subject and body for one sponsor. */
   forBrand: function (brand) {
     var b = String(brand || '').trim() || '[BRAND NAME]';
     var fill = function (t) {
       return t
+        .replace(/\{\{GUESTS\}\}/g, SPONSOR_EMAIL.guestLines())
         .replace(/\{\{BRAND\}\}/g, b)
-        .replace(/\{\{SENDER\}\}/g, SPONSOR_EMAIL.SENDER_NAME)
         .replace(/\{\{MOBILE\}\}/g, SPONSOR_EMAIL.MOBILE)
         .replace(/\{\{EMAIL\}\}/g, SPONSOR_EMAIL.EMAIL)
         .replace(/\{\{MESSENGER\}\}/g, SPONSOR_EMAIL.MESSENGER);
