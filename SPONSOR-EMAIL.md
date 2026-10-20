@@ -1,6 +1,6 @@
 # Sponsor invitation
 
-The dashboard fills in the brand name when you tap **Copy invitation** or **Write in Gmail** on a sponsor card. To change the wording or the guest list, edit `dashboard/sponsor-email.js` (this file is a copy for reference).
+On the dashboard, **Copy invitation** copies the themed letter (GAME TIME design, guest names linked to their Facebook pages). Paste it into the Gmail message body. **Write in Gmail** copies it the same way and opens a draft with the recipient and subject filled in, so you only paste. **Copy plain text** gives the version below, for Messenger or Facebook. To change the wording or the guest list, edit `dashboard/sponsor-email.js`.
 
 **Subject:** Be a Ninang of GAME TIME, SSOB's birthday celebration (Nov 14)
 

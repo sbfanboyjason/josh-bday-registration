@@ -87,7 +87,7 @@ The starter list has 38 brands. Most are SB19 endorsements from news reports, pl
 
 19 of the consumer brands come with a public contact from the company's own site or official page (15 have an email). Where a brand has no public email, the Contact Person column says the best route, usually its contact form or a message to its Facebook page. A few emails go to customer care, so ask them to forward your letter to Marketing. Check each one before sending, since contacts change.
 
-Each sponsor card on the dashboard has Copy invitation, which copies the letter with the brand's name filled in, and Write in Gmail, which opens a ready-to-send draft from sbfanboyjason@gmail.com. Send it yourself, then set the status to Emailed. The letter is in `dashboard/sponsor-email.js` (copy in SPONSOR-EMAIL.md). The Messenger line points to m.me/sb19atinfanboys.
+Each sponsor card on the dashboard has Copy invitation, which copies the themed GAME TIME letter with the brand's name filled in and the guests' names linked to their Facebook pages. Write in Gmail copies it the same way and opens a draft from sbfanboyjason@gmail.com with the recipient and subject filled in. Click in the message, paste (Ctrl+V), send it yourself, then set the status to Emailed. Copy plain text gives a version without design, for Messenger or Facebook. Paste on a computer: the Gmail phone app may drop some of the design. The letter is in `dashboard/sponsor-email.js` (copy in SPONSOR-EMAIL.md). The Messenger line points to m.me/sb19atinfanboys.
 
 On the dashboard Sponsors tab, admins can change a status straight from the dropdown on each card, or tap Edit for the full record. Setting Emailed or Followed up stamps today's date in Last Contacted.
 

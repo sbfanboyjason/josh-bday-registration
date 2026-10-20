@@ -36,12 +36,12 @@
   }
   function plural(n, one, many) { return n === 1 ? one : (many || one + 's'); }
 
-  function toast(msg) {
+  function toast(msg, ms) {
     var t = $('toast');
     t.textContent = msg;
     t.hidden = false;
     clearTimeout(toast._t);
-    toast._t = setTimeout(function () { t.hidden = true; }, 3200);
+    toast._t = setTimeout(function () { t.hidden = true; }, ms || 3200);
   }
 
   function showError(msg) {
@@ -683,19 +683,27 @@
         if (typeof SPONSOR_EMAIL !== 'undefined') {
           actions.appendChild(chip('Copy invitation', '', function () {
             var m = SPONSOR_EMAIL.forBrand(r.name);
-            copyText('Subject: ' + m.subject + '\n\n' + m.body).then(function () { toast('Invitation for ' + r.name + ' copied'); });
+            copyRich(m.html, m.body).then(function () {
+              toast('Themed invitation for ' + r.name + ' copied. Paste it into the email body.');
+            });
+          }));
+          actions.appendChild(chip('Copy plain text', '', function () {
+            var m = SPONSOR_EMAIL.forBrand(r.name);
+            copyText(m.body).then(function () { toast('Plain-text invitation copied (for Messenger or Facebook).'); });
           }));
         }
         if (r.email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(r.email) && typeof SPONSOR_EMAIL !== 'undefined') {
           actions.appendChild(chip('Write in Gmail', '', function () {
             var m = SPONSOR_EMAIL.forBrand(r.name);
+            // Gmail's compose link only takes plain text, so the themed letter
+            // goes on the clipboard and the draft opens with To and Subject filled.
+            copyRich(m.html, m.body);
             var url = 'https://mail.google.com/mail/?view=cm&fs=1' +
               '&authuser=' + encodeURIComponent(SPONSOR_EMAIL.EMAIL) +
               '&to=' + encodeURIComponent(r.email) +
-              '&su=' + encodeURIComponent(m.subject) +
-              '&body=' + encodeURIComponent(m.body);
+              '&su=' + encodeURIComponent(m.subject);
             window.open(url, '_blank', 'noopener');
-            toast('Opened in Gmail. After you send it, set the status to Emailed.');
+            toast('Gmail opened. Click in the message and paste (Ctrl+V) to add the themed letter. After you send it, set the status to Emailed.', 9000);
           }));
         }
         if (r.email) {
@@ -719,6 +727,37 @@
     ta.select();
     try { document.execCommand('copy'); } catch (e) {}
     document.body.removeChild(ta);
+  }
+
+  /** Copies formatted HTML (with a plain-text fallback) so it pastes with its design. */
+  function copyRich(html, plain) {
+    try {
+      if (window.ClipboardItem && navigator.clipboard && navigator.clipboard.write) {
+        return navigator.clipboard.write([new ClipboardItem({
+          'text/html': new Blob([html], { type: 'text/html' }),
+          'text/plain': new Blob([plain], { type: 'text/plain' }),
+        })]).catch(function () { copyRichFallback(html); });
+      }
+    } catch (e) { /* fall through */ }
+    copyRichFallback(html);
+    return Promise.resolve();
+  }
+
+  function copyRichFallback(html) {
+    var box = document.createElement('div');
+    box.contentEditable = 'true';
+    box.innerHTML = html;
+    box.style.position = 'fixed';
+    box.style.left = '-9999px';
+    document.body.appendChild(box);
+    var range = document.createRange();
+    range.selectNodeContents(box);
+    var sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+    try { document.execCommand('copy'); } catch (e) {}
+    sel.removeAllRanges();
+    document.body.removeChild(box);
   }
 
   function copyText(t) {
