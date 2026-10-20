@@ -1910,23 +1910,22 @@ function sendMismatchNoticeEmail(rowObj, deadline) {
       link +
       '</a></p>' +
       '<p>Enter your Registration ID and the email you registered with, then submit the correct reference ' +
-      'number and/or a new payment screenshot. No need to register again — this updates your existing registration.</p>'
+      'number or a new payment screenshot. You don\'t need to register again. This updates the registration you already have.</p>'
     : '<p>Please contact us at <strong>' +
       CONFIG.ORGANIZER_CONTACT_EMAIL +
-      '</strong> with the corrected reference number and/or a new payment screenshot.</p>';
+      '</strong> with the correct reference number or a new payment screenshot.</p>';
 
   const bodyHtml =
-    '<p>Hi <strong>' + escapeHtml_(rowObj['Full Legal Name']) + '</strong>,</p>' +
-    '<p>We found an issue verifying the payment for your registration — most commonly this means the ' +
-    'amount paid isn\'t the ₱549 registration fee, or we couldn\'t match your reference number.</p>' +
+    '<p>Hi ' + escapeHtml_(greetName_(rowObj['First Name'], rowObj['Full Legal Name'])) + ',</p>' +
+    '<p>We checked your payment and something didn\'t match. Usually the amount sent isn\'t the ₱549 ' +
+    'registration fee, or the reference number doesn\'t match the screenshot.</p>' +
     infoBox_(rows) +
     warningBox_(
       'You have until <strong>' +
         escapeHtml_(Utilities.formatDate(deadline, 'Asia/Manila', "EEE, MMM d 'at' h:mm a")) +
         '</strong> (about ' +
         CONFIG.CORRECTION_WINDOW_HOURS +
-        ' hours from now) to fix this, or your reserved seat(s) will be automatically released back into ' +
-        'the pool for other registrants.'
+        ' hours from now) to fix this. After that, your slot goes back to the pool for other A\'TIN.'
     ) +
     fixSection;
 
@@ -1939,12 +1938,12 @@ function sendMismatchNoticeEmail(rowObj, deadline) {
 
   MailApp.sendEmail({
     to: rowObj['Email Address'],
-    subject: `[${CONFIG.EVENT_NAME}] Action Needed — Payment Issue on ${regId}`,
+    subject: `[GAME TIME] Action needed: please fix your payment details (${regId})`,
     htmlBody: shell.html,
     body:
-      `Hi ${rowObj['Full Legal Name']}, there's a payment issue on your registration (${regId}). You have ` +
+      `Hi ${greetName_(rowObj['First Name'], rowObj['Full Legal Name'])}, there's a payment issue on your registration (${regId}). You have ` +
       `until ${Utilities.formatDate(deadline, 'Asia/Manila', "EEE, MMM d 'at' h:mm a")} to fix it${link ? ' here: ' + link : ', contact ' + CONFIG.ORGANIZER_CONTACT_EMAIL} ` +
-      `or your seat(s) will be released.\n\n— ${CONFIG.SENDER_DISPLAY_NAME}`,
+      `or your slot will be released.\n\n— ${CONFIG.SENDER_DISPLAY_NAME}`,
     name: CONFIG.SENDER_DISPLAY_NAME,
     inlineImages: shell.inlineImages,
   });
@@ -1959,9 +1958,9 @@ function sendCorrectionReceivedEmail(rowObj) {
     infoRow_('Reference No.', escapeHtml_(rowObj['Payment Reference No.']));
 
   const bodyHtml =
-    '<p>Hi <strong>' + escapeHtml_(rowObj['Full Legal Name']) + '</strong>,</p>' +
-    '<p>We\'ve received your corrected payment information. Your registration is back in the verification ' +
-    'queue as <strong>Pending Payment Verification</strong> — we\'ll follow up once it\'s checked.</p>' +
+    '<p>Hi ' + escapeHtml_(greetName_(rowObj['First Name'], rowObj['Full Legal Name'])) + ',</p>' +
+    '<p>Thanks, we got your corrected payment details. Your registration is back in line for checking, ' +
+    'and we\'ll email you again once it\'s done. If it all matches, that next email has your entry QR code.</p>' +
     infoBox_(rows);
 
   const shell = buildEmailShell_({
@@ -1973,10 +1972,10 @@ function sendCorrectionReceivedEmail(rowObj) {
 
   MailApp.sendEmail({
     to: rowObj['Email Address'],
-    subject: `[${CONFIG.EVENT_NAME}] Corrected Payment Info Received — ${regId}`,
+    subject: `[GAME TIME] We got your corrected payment details (${regId})`,
     htmlBody: shell.html,
     body:
-      `Hi ${rowObj['Full Legal Name']}, we've received your corrected payment info for ${regId}. Your ` +
+      `Hi ${greetName_(rowObj['First Name'], rowObj['Full Legal Name'])}, we've received your corrected payment info for ${regId}. Your ` +
       `registration is back in the verification queue.\n\n— ${CONFIG.SENDER_DISPLAY_NAME}`,
     name: CONFIG.SENDER_DISPLAY_NAME,
     inlineImages: shell.inlineImages,
@@ -1987,13 +1986,12 @@ function sendCorrectionReceivedEmail(rowObj) {
 function sendExpiredReleaseEmail(rowObj) {
   const regId = rowObj['Registration ID'];
   const bodyHtml =
-    '<p>Hi <strong>' + escapeHtml_(rowObj['Full Legal Name']) + '</strong>,</p>' +
-    '<p>Your reserved seat(s) under <strong>' +
+    '<p>Hi ' + escapeHtml_(greetName_(rowObj['First Name'], rowObj['Full Legal Name'])) + ',</p>' +
+    '<p>Your reserved slot under <strong>' +
     escapeHtml_(regId) +
-    '</strong> have been released back to other registrants because the payment issue on this registration ' +
-    'wasn\'t resolved in time.</p>' +
-    '<p>If you\'d still like to attend and slots are available, you\'re welcome to register again with the ' +
-    'correct payment details. If you believe this was a mistake, contact us right away at <strong>' +
+    '</strong> has been released to other registrants because the payment issue wasn\'t fixed in time.</p>' +
+    '<p>If you still want to come and there are slots left, you can register again with the correct ' +
+    'payment details. If you think this is a mistake, message us right away at <strong>' +
     CONFIG.ORGANIZER_CONTACT_EMAIL +
     '</strong>.</p>';
 
@@ -2006,10 +2004,10 @@ function sendExpiredReleaseEmail(rowObj) {
 
   MailApp.sendEmail({
     to: rowObj['Email Address'],
-    subject: `[${CONFIG.EVENT_NAME}] Reservation Released — ${regId}`,
+    subject: `[GAME TIME] Your reserved slot was released (${regId})`,
     htmlBody: shell.html,
     body:
-      `Hi ${rowObj['Full Legal Name']}, your reserved seat(s) under ${regId} have been released. Contact ` +
+      `Hi ${greetName_(rowObj['First Name'], rowObj['Full Legal Name'])}, your reserved slot under ${regId} has been released. Contact ` +
       `${CONFIG.ORGANIZER_CONTACT_EMAIL} if this was a mistake.\n\n— ${CONFIG.SENDER_DISPLAY_NAME}`,
     name: CONFIG.SENDER_DISPLAY_NAME,
     inlineImages: shell.inlineImages,
@@ -2020,11 +2018,11 @@ function sendExpiredReleaseEmail(rowObj) {
 function sendRejectionEmail(rowObj) {
   const regId = rowObj['Registration ID'];
   const bodyHtml =
-    '<p>Hi <strong>' + escapeHtml_(rowObj['Full Legal Name']) + '</strong>,</p>' +
+    '<p>Hi ' + escapeHtml_(greetName_(rowObj['First Name'], rowObj['Full Legal Name'])) + ',</p>' +
     '<p>We were unable to approve your registration <strong>' +
     escapeHtml_(regId) +
-    '</strong> and your reserved seat(s) have been released.</p>' +
-    '<p>If you believe this was a mistake or would like to register again, contact us at <strong>' +
+    '</strong>, so your reserved slot has been released.</p>' +
+    '<p>If you think this is a mistake, or you want to register again, message us at <strong>' +
     CONFIG.ORGANIZER_CONTACT_EMAIL +
     '</strong>.</p>';
 
@@ -2037,10 +2035,10 @@ function sendRejectionEmail(rowObj) {
 
   MailApp.sendEmail({
     to: rowObj['Email Address'],
-    subject: `[${CONFIG.EVENT_NAME}] Registration Not Approved — ${regId}`,
+    subject: `[GAME TIME] Your registration was not approved (${regId})`,
     htmlBody: shell.html,
     body:
-      `Hi ${rowObj['Full Legal Name']}, your registration ${regId} was not approved and your seat(s) were ` +
+      `Hi ${greetName_(rowObj['First Name'], rowObj['Full Legal Name'])}, your registration ${regId} was not approved and your slot was ` +
       `released. Contact ${CONFIG.ORGANIZER_CONTACT_EMAIL} with questions.\n\n— ${CONFIG.SENDER_DISPLAY_NAME}`,
     name: CONFIG.SENDER_DISPLAY_NAME,
     inlineImages: shell.inlineImages,
@@ -2051,11 +2049,11 @@ function sendRejectionEmail(rowObj) {
 function sendCancellationEmail(rowObj) {
   const regId = rowObj['Registration ID'];
   const bodyHtml =
-    '<p>Hi <strong>' + escapeHtml_(rowObj['Full Legal Name']) + '</strong>,</p>' +
+    '<p>Hi ' + escapeHtml_(greetName_(rowObj['First Name'], rowObj['Full Legal Name'])) + ',</p>' +
     '<p>Your registration <strong>' +
     escapeHtml_(regId) +
-    '</strong> has been cancelled and your reserved seat(s) released back to the pool.</p>' +
-    '<p>If this wasn\'t expected, contact us right away at <strong>' +
+    '</strong> has been cancelled and your slot has been released.</p>' +
+    '<p>If you didn\'t expect this, message us right away at <strong>' +
     CONFIG.ORGANIZER_CONTACT_EMAIL +
     '</strong>.</p>';
 
@@ -2068,10 +2066,10 @@ function sendCancellationEmail(rowObj) {
 
   MailApp.sendEmail({
     to: rowObj['Email Address'],
-    subject: `[${CONFIG.EVENT_NAME}] Registration Cancelled — ${regId}`,
+    subject: `[GAME TIME] Your registration was cancelled (${regId})`,
     htmlBody: shell.html,
     body:
-      `Hi ${rowObj['Full Legal Name']}, your registration ${regId} was cancelled and your seat(s) released. ` +
+      `Hi ${greetName_(rowObj['First Name'], rowObj['Full Legal Name'])}, your registration ${regId} was cancelled and your slot was released. ` +
       `Contact ${CONFIG.ORGANIZER_CONTACT_EMAIL} if unexpected.\n\n— ${CONFIG.SENDER_DISPLAY_NAME}`,
     name: CONFIG.SENDER_DISPLAY_NAME,
     inlineImages: shell.inlineImages,

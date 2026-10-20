@@ -1,7 +1,7 @@
 /* ============================================================
    Shared "Developed by" credit — included on every page
    (registration page, admin page, check-in scanner).
-   Fixed to the lower-right corner, subtle, never blocks content.
+   Fixed to the lower-right corner on wide screens; at the end of the page on phones.
    ============================================================ */
 .dev-credit {
   position: fixed;
@@ -22,11 +22,15 @@
   white-space: nowrap;
 }
 
-@media (max-width: 480px) {
+/* On phones the content fills the screen, so a fixed badge would sit on top
+   of fields and numbers. There it goes at the end of the page instead. */
+@media (max-width: 760px) {
   .dev-credit {
+    position: static;
+    display: block;
+    width: fit-content;
+    margin: 12px auto calc(16px + env(safe-area-inset-bottom));
     font-size: 0.62rem;
     padding: 4px 9px;
-    right: 8px;
-    bottom: 8px;
   }
 }

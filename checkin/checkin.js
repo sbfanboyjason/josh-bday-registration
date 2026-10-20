@@ -349,7 +349,7 @@
           n.textContent = r.name + (r.type && r.type !== 'Registrant' ? '  [' + r.type.toUpperCase() + ' PASS]' : '');
           var sub = document.createElement('div');
           sub.className = 'result-sub';
-          sub.textContent = r.regId + ' · ' + r.qty + ' ticket' + (r.qty === 1 ? '' : 's') + (r.verdict === 'INVALID' ? ' · ' + r.status : '');
+          sub.textContent = r.regId + (r.qty > 1 ? ' · ' + r.qty + ' people' : '') + (r.verdict === 'INVALID' ? ' · ' + r.status : '');
           main.appendChild(n);
           main.appendChild(sub);
           var pill = document.createElement('span');
@@ -414,7 +414,7 @@
       v === 'VALID'
         ? 'Check the ID, take a photo, then confirm.'
         : v === 'ADMITTED'
-          ? 'Release ' + rec.qty + ' ticket' + plural(rec.qty) + ' now.'
+          ? 'Let them in.'
           : res.reason || '';
 
     // record
@@ -422,7 +422,7 @@
     if (rec) {
       $('qtyNum').textContent = rec.qty;
       $('qtyLabel').textContent =
-        v === 'VALID' || v === 'ADMITTED' ? 'ticket' + plural(rec.qty) + ' to release' : 'ticket' + plural(rec.qty) + ' on this registration';
+        (rec.qty === 1 ? 'person' : 'people') + (v === 'VALID' || v === 'ADMITTED' ? ' to let in' : ' on this registration');
       $('recName').textContent = rec.admittedAs ? rec.admittedAs : rec.name;
       $('recRegId').textContent = rec.regId + (rec.type && rec.type !== 'Registrant' ? ' · FREE ' + rec.type.toUpperCase() + ' PASS' : '') + (rec.admittedAs ? ' · transferred from ' + rec.name : '');
       $('recStatus').textContent = rec.status;
@@ -445,7 +445,7 @@
           used.appendChild(m);
         }
         var d = document.createElement('div');
-        d.textContent = 'Do not release tickets again. Send the person to the admin if there is a dispute.';
+        d.textContent = 'Do not let them in again. Send the person to the admin if there is a dispute.';
         d.style.marginTop = '6px';
         used.appendChild(d);
       } else {
