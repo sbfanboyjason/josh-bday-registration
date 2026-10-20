@@ -9,19 +9,18 @@ var SPONSOR_EMAIL = {
   EMAIL: 'sbfanboyjason@gmail.com',
   MESSENGER: 'https://m.me/sb19atinfanboys',
 
-  // Big fan accounts attending as guests: [name, Facebook link].
+  // Guests (big fan accounts and P-pop groups): [name, Facebook link].
   // Leave the link empty ('') and the name is listed without one.
   GUESTS: [
-    ['Ace Agoncillo', ''],
-    ['Boy Panda', ''],
-    ['Kielskie', ''],
-    ['Rinacam', ''],
-    ['Papawolf', ''],
-    ['GentoBox', ''],
-    ['Ma Ria', ''],
-    ['MA1', ''],
-    ['1 South', ''],
-    ['Lloyd', ''],
+    ['Ace Agoncillo', 'https://www.facebook.com/ace.agoncillo'],
+    ['Boy Panda', 'https://www.facebook.com/profile.php?id=100064733887177'],
+    ['Kielskie', 'https://www.facebook.com/KIELSKIE.ph'],
+    ['Rinacam', 'https://www.facebook.com/profile.php?id=61577886231195'],
+    ['Papawolf', 'https://www.facebook.com/PAPAmoWOLF'],
+    ['GentoBox', 'https://www.facebook.com/Gentobox01'],
+    ['Ma Ria', 'https://www.facebook.com/Aimyat1995'],
+    ['MA1 (P-pop group)', 'https://www.facebook.com/profile.php?id=61577758042157'],
+    ['One South (P-pop group)', 'https://www.facebook.com/onesouth24'],
   ],
 
   subject: 'Be a Ninang of GAME TIME, SSOB\'s birthday celebration (Nov 14)',
@@ -41,7 +40,7 @@ var SPONSOR_EMAIL = {
     'Organizer: SB19 A\'tin Fanboys',
     '',
     'OUR GUESTS',
-    'These A\'TIN fan accounts with big followings will be with us and share the celebration with their audiences. Their Facebook pages are linked below so you can check them, and we are happy to connect you with any of them if you would like to ask them directly.',
+    'These A\'TIN fan accounts with big followings will be with us and share the celebration with their audiences. Joining them are the P-pop groups MA1 and One South, who are SB19 fanboys themselves. Their Facebook pages are linked below so you can check them, and we are happy to connect you with any of them if you would like to ask them directly.',
     '{{GUESTS}}',
     '',
     'HOW YOU CAN BE OUR NINANG',

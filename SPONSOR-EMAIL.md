@@ -1,6 +1,6 @@
 # Sponsor invitation
 
-The dashboard fills in the brand name when you tap **Copy invitation** or **Write in Gmail** on a sponsor card. To change the wording or add the guests' Facebook links, edit `dashboard/sponsor-email.js` (this file is a copy for reference).
+The dashboard fills in the brand name when you tap **Copy invitation** or **Write in Gmail** on a sponsor card. To change the wording or the guest list, edit `dashboard/sponsor-email.js` (this file is a copy for reference).
 
 **Subject:** Be a Ninang of GAME TIME, SSOB's birthday celebration (Nov 14)
 
@@ -19,17 +19,16 @@ Attendees: 125 A'TIN and BBQs, fanboys and fangirls
 Organizer: SB19 A'tin Fanboys
 
 OUR GUESTS
-These A'TIN fan accounts with big followings will be with us and share the celebration with their audiences. Their Facebook pages are linked below so you can check them, and we are happy to connect you with any of them if you would like to ask them directly.
-- Ace Agoncillo
-- Boy Panda
-- Kielskie
-- Rinacam
-- Papawolf
-- GentoBox
-- Ma Ria
-- MA1
-- 1 South
-- Lloyd
+These A'TIN fan accounts with big followings will be with us and share the celebration with their audiences. Joining them are the P-pop groups MA1 and One South, who are SB19 fanboys themselves. Their Facebook pages are linked below so you can check them, and we are happy to connect you with any of them if you would like to ask them directly.
+- Ace Agoncillo: https://www.facebook.com/ace.agoncillo
+- Boy Panda: https://www.facebook.com/profile.php?id=100064733887177
+- Kielskie: https://www.facebook.com/KIELSKIE.ph
+- Rinacam: https://www.facebook.com/profile.php?id=61577886231195
+- Papawolf: https://www.facebook.com/PAPAmoWOLF
+- GentoBox: https://www.facebook.com/Gentobox01
+- Ma Ria: https://www.facebook.com/Aimyat1995
+- MA1 (P-pop group): https://www.facebook.com/profile.php?id=61577758042157
+- One South (P-pop group): https://www.facebook.com/onesouth24
 
 HOW YOU CAN BE OUR NINANG
 Our main request is a cash sponsorship. It goes straight to the food, venue and program for the celebration, and any amount you are comfortable with makes a real difference. We keep a record of every peso and will gladly send [BRAND NAME] a short report of how your support was used after the event.
