@@ -239,6 +239,7 @@ function getSetting_(key) {
  */
 const SWITCHES = [
   ['Registration Open', 'Yes', 'Type No to close the public form right away (people see "Registration is closed"). Yes to reopen.'],
+  ['Ninang Pledges Open', 'Yes', 'Type No to close the Be a Ninang form. The Ninang wall stays up. Yes to reopen.'],
 ];
 
 function getSwitch_(key) {
@@ -404,6 +405,9 @@ function onOpen() {
     .addItem('Set Up Sponsors Sheet', 'setupSponsorsSheet')
     .addItem('Load SB19 Brand Partners into Sponsors', 'loadSponsorSeed')
     .addSeparator()
+    .addItem('Set Up Ninangs Sheet (individual Ninangs)', 'setupNinangsSheet')
+    .addItem('Send Waiting Ninang Emails Now', 'sendNinangEmailsNow')
+    .addSeparator()
     .addItem('Run Backup Now', 'runBackupNow')
     .addToUi();
 }
@@ -445,7 +449,13 @@ function computeBudget_(data) {
   const cost = getSetting_('Venue Cost per Head');
   const capacity = getSetting_('Venue Capacity');
   const sp = typeof sponsorTotals_ === 'function' ? sponsorTotals_() : { cashReceived: 0, cashPledged: 0, itemValue: 0, total: 0, confirmed: 0 };
-  const b = computeBudgetFrom_(data, fee, cost, capacity, sp.cashReceived);
+  const nin = typeof ninangTotals_ === 'function' ? ninangTotals_() : { cashReceived: 0, cashPending: 0, received: 0, pending: 0, total: 0 };
+  const b = computeBudgetFrom_(data, fee, cost, capacity, sp.cashReceived + nin.cashReceived);
+  b.brandCashReceived = sp.cashReceived;
+  b.ninangCashReceived = nin.cashReceived;
+  b.ninangCashPending = nin.cashPending;
+  b.ninangReceived = nin.received;
+  b.ninangPending = nin.pending;
   b.sponsorCashPledged = sp.cashPledged;
   b.sponsorItemValue = sp.itemValue;
   b.sponsorCount = sp.total;
@@ -567,6 +577,10 @@ function doGet(e) {
     return jsonResponse(publicSponsors_()); // see Sponsors.gs
   }
 
+  if (action === 'ninangs') {
+    return jsonResponse(publicNinangs_()); // see Ninangs.gs
+  }
+
   return jsonResponse({ ok: false, error: 'Unknown action.' });
 }
 
@@ -575,6 +589,7 @@ function doGet(e) {
  * POST <web-app-url>?action=correct   → self-service payment correction
  * POST <web-app-url>?action=checkin   → event-day scanner (Checkin.gs)
  * POST <web-app-url>?action=dash      → team dashboard (Dashboard.gs)
+ * POST <web-app-url>?action=ninang    → Be a Ninang pledge (Ninangs.gs)
  *
  * Content-Type must be text/plain on the client side to avoid a CORS
  * preflight — see script.js / correct.js comments.
@@ -589,6 +604,9 @@ function doPost(e) {
   }
   if (action === 'correct') {
     return handleCorrection(e);
+  }
+  if (action === 'ninang') {
+    return handleNinangPledge_(e); // Be a Ninang form, see Ninangs.gs
   }
   return handleNewRegistration(e);
 }
@@ -1161,6 +1179,11 @@ function processConfirmedStatusChanges() {
     sendPendingQrEmails_();
   } catch (err) {
     console.error('sendPendingQrEmails_ error: ' + err.message);
+  }
+  try {
+    if (typeof sendNinangStatusEmails_ === 'function') sendNinangStatusEmails_();
+  } catch (err) {
+    console.error('sendNinangStatusEmails_ error: ' + err.message);
   }
 
   const props = PropertiesService.getScriptProperties();
@@ -2139,8 +2162,18 @@ function buildDashboard() {
     const L = n <= 26 ? String.fromCharCode(64 + n) : 'A' + String.fromCharCode(64 + n - 26);
     return SP + L + '2:' + L;
   };
-  const SP_CASH = 'SUMIFS(' + spCol('Cash Received') + ',' + spCol('Status') + ',"<>Declined")';
-  const SP_PLEDGED = 'MAX(0,SUMIFS(' + spCol('Cash Pledged') + ',' + spCol('Status') + ',"<>Declined")-' + SP_CASH + ')';
+  const BRAND_CASH = 'SUMIFS(' + spCol('Cash Received') + ',' + spCol('Status') + ',"<>Declined")';
+  const SP_PLEDGED = 'MAX(0,SUMIFS(' + spCol('Cash Pledged') + ',' + spCol('Status') + ',"<>Declined")-' + BRAND_CASH + ')';
+  // Individual Ninangs (Ninangs tab): cash on rows marked Received.
+  if (!ss.getSheetByName(NINANGS.SHEET_NAME)) setupNinangsSheet(true);
+  const NN = "'" + NINANGS.SHEET_NAME + "'!";
+  const nnCol = function (h) {
+    const n = NINANGS.HEADERS.indexOf(h) + 1;
+    const L = n <= 26 ? String.fromCharCode(64 + n) : 'A' + String.fromCharCode(64 + n - 26);
+    return NN + L + '2:' + L;
+  };
+  const NINANG_CASH = 'SUMIFS(' + nnCol('Cash Received') + ',' + nnCol('Status') + ',"' + NINANGS.STATUS.RECEIVED + '")';
+  const SP_CASH = '(' + BRAND_CASH + '+' + NINANG_CASH + ')';
 
   sheet.getRange(1, 1, 80, 12).setBackground(DARK).setFontColor(BLUSH);
   for (let c = 1; c <= 10; c++) sheet.setColumnWidth(c, 110);
@@ -2199,7 +2232,8 @@ function buildDashboard() {
     ['Margin left by each paid head', '=' + MARGIN, peso],
     ['Collected (verified paid heads x fee)', '=' + PAID_OK + '*' + FEE, peso],
     ['Venue bill (everyone inside x cost per head)', '=' + HEAD + '*' + COST, peso],
-    ['Sponsor cash received (Sponsors tab)', '=' + SP_CASH, peso],
+    ['Brand sponsor cash received (Sponsors tab)', '=' + BRAND_CASH, peso],
+    ['Individual Ninang cash received (Ninangs tab)', '=' + NINANG_CASH, peso],
     ['SURPLUS / SHORTFALL right now', '=' + PAID_OK + '*' + FEE + '-' + HEAD + '*' + COST + '+' + SP_CASH, peso],
     ['Sponsor cash pledged, not yet received', '=' + SP_PLEDGED, peso],
     ['Cost of free passes (free heads x cost per head)', '=' + FREE + '*' + COST, peso],
@@ -2215,7 +2249,8 @@ function buildDashboard() {
     sheet.getRange(r, 7, 1, 3).merge().setFormula(l[1]).setNumberFormat(l[2])
       .setFontColor(PINK).setFontSize(12).setFontWeight('bold').setHorizontalAlignment('right');
   });
-  const surplusCell = sheet.getRange(18, 7, 1, 3);
+  const surplusRow = 12 + lines.map(function (l) { return l[0]; }).indexOf('SURPLUS / SHORTFALL right now');
+  const surplusCell = sheet.getRange(surplusRow, 7, 1, 3);
   surplusCell.setFontSize(16);
   sheet.setConditionalFormatRules([
     SpreadsheetApp.newConditionalFormatRule().whenNumberLessThan(0)

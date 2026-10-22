@@ -1,0 +1,187 @@
+/* Be a Ninang page. Builds on ../assets/styles.css. */
+
+.ninang-title {
+  font-family: 'VT323', ui-monospace, monospace;
+  font-weight: 400;
+  font-size: 3.2rem;
+  line-height: 1;
+  letter-spacing: 0.06em;
+  color: var(--gold-soft);
+  text-shadow: 0 0 18px rgba(255, 79, 154, 0.7);
+  text-align: center;
+  margin: 6px 0 10px;
+}
+
+.ninang-lead {
+  text-align: center;
+  font-size: 1rem;
+  line-height: 1.55;
+  color: var(--text);
+  margin: 0 auto 12px;
+  max-width: 520px;
+}
+
+.ninang-where ul {
+  margin: 0 0 10px;
+  padding-left: 1.1rem;
+  line-height: 1.6;
+}
+
+/* ---------- Ninang wall ---------- */
+.ninang-wall h2 {
+  margin-bottom: 4px;
+}
+
+.wall-list {
+  list-style: none;
+  padding: 0;
+  margin: 12px 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.wall-list li {
+  border: 1px solid var(--border);
+  background: rgba(255, 79, 154, 0.08);
+  border-radius: 999px;
+  padding: 7px 14px;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.wall-list li.anon {
+  color: var(--text-dim);
+  font-style: italic;
+  font-weight: 500;
+}
+
+.wall-list li::before {
+  content: '♥ ';
+  color: var(--gold);
+}
+
+/* ---------- Form bits ---------- */
+.choice-stack {
+  display: grid;
+  gap: 10px;
+}
+
+.choice-stack .choice {
+  justify-content: flex-start;
+  padding: 0 14px;
+  text-align: left;
+}
+
+.choice-row.choice-3 {
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+.field textarea {
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text);
+  font-size: 16px;
+  font-family: inherit;
+  line-height: 1.45;
+  resize: vertical;
+}
+
+.field textarea:focus {
+  outline: none;
+  border-color: var(--gold);
+}
+
+.field.invalid textarea {
+  border-color: var(--danger);
+}
+
+.hint-inline {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  font-weight: 400;
+  font-family: inherit;
+  letter-spacing: 0;
+}
+
+.official-box {
+  display: grid;
+  gap: 4px;
+  border: 1px solid var(--gold);
+  background: rgba(255, 79, 154, 0.1);
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 14px;
+  font-size: 0.9rem;
+}
+
+.official-box small {
+  color: var(--text-dim);
+  font-size: 0.75rem;
+}
+
+.dpa-details summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--gold-soft);
+  margin-bottom: 8px;
+}
+
+#field-dpa.invalid span {
+  color: var(--danger);
+}
+
+.success-card {
+  text-align: center;
+}
+
+.success-card .btn {
+  margin-top: 8px;
+}
+
+.ninang-footer-link {
+  text-align: center;
+  margin: 26px 0 8px;
+  font-size: 0.9rem;
+}
+
+.ninang-footer-link a {
+  color: var(--gold-soft);
+}
+
+.confirm-list {
+  margin: 0 0 12px;
+  display: grid;
+  gap: 8px;
+}
+
+.confirm-list div {
+  display: grid;
+  gap: 2px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 8px;
+}
+
+.confirm-list span {
+  font-size: 0.72rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.confirm-list strong {
+  font-size: 0.95rem;
+  word-break: break-word;
+}
+
+@media (max-width: 420px) {
+  .ninang-title {
+    font-size: 2.6rem;
+  }
+  .choice-row.choice-3 .choice {
+    font-size: 0.85rem;
+  }
+}

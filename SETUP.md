@@ -29,6 +29,7 @@ What changed from the screening:
    - `Checkin`, paste `backend/Checkin.gs`
    - `Dashboard`, paste `backend/Dashboard.gs`
    - `Sponsors`, paste `backend/Sponsors.gs`
+   - `Ninangs`, paste `backend/Ninangs.gs`
 5. Save (Ctrl+S). Go back to the sheet and reload it. A "Josh Birthday Admin" menu appears.
 6. Josh Birthday Admin > Initialize / Reset Sheet Structure. Approve the permissions prompt. This creates the Registrations, `_Config` and `_AuditLog` tabs.
 7. Josh Birthday Admin > Install Automated Triggers (run once).
@@ -102,7 +103,20 @@ Money:
 
 What sponsors get: a shoutout pubmat and engagement, tracked in the Pubmat column (Not started, Drafted, Posted). Sponsors marked Confirmed or Received with Show on Site = Yes appear in a "Thank you to our sponsors" section at the bottom of the registration page. Paste an https logo link in Logo URL to show their logo instead of the name.
 
-## 7. Rehearsal and event day
+## 7. Individual Ninangs (Be a Ninang page)
+
+Public page to share on social media: `https://sbfanboyjason.github.io/josh-bday-registration/ninang/`. It has its own share image, so a Facebook post shows "Be a Ninang" with the poster. The QR codes are in the delivery pack.
+
+- Anyone can pledge cash, items or both. There is no minimum and no goal shown.
+- They choose to be thanked by name or as Anonymous Ninang. The team still sees their details; only the public wall hides them.
+- Pledges land in their own sheet tab, `Ninangs`, separate from the brand `Sponsors` list. Run Josh Birthday Admin > Set Up Ninangs Sheet once to create it (the first pledge also creates it).
+- Check each GCash payment, then set Status to Received on the dashboard Ninangs tab (tap Save) or straight in the sheet. Within a minute they get a thank-you email and appear on the Ninang wall. Cash Received fills in with the pledged amount if left blank; change it if a different amount arrived.
+- Payment Issue sends a short email asking them to send the correct reference or screenshot. Cancelled sends nothing and removes them from the totals.
+- Received Ninang cash counts in the budget on its own line, next to brand sponsor cash.
+- Birthday messages for SSOB are in the "Birthday Message for SSOB" column and on the dashboard cards, for the program.
+- To stop new pledges, set Ninang Pledges Open to No in `_Config`. The wall stays up.
+
+## 8. Rehearsal and event day
 
 Same as the screening. Josh Birthday Admin > Create Check-in Test Tickets adds five test rows, including one free Guest pass, and shows their QR codes. Scan them with `/checkin/`, then run Remove Check-in Test Tickets before registration opens. Test rows hold seats until removed.
 

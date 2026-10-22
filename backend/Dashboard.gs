@@ -56,6 +56,10 @@ function handleDashboard_(e) {
         return jsonResponse(dashSponsorSave_(req, staff));
       case 'sponsorSeed':
         return jsonResponse(dashSponsorSeed_(staff));
+      case 'ninangs':
+        return jsonResponse(dashNinangList_(staff)); // Ninangs.gs
+      case 'ninangSave':
+        return jsonResponse(dashNinangSave_(req, staff));
       default:
         return jsonResponse({ ok: false, code: 'BAD_REQUEST', error: 'Unknown operation.' });
     }

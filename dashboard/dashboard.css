@@ -244,3 +244,11 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: var(--p
 .pill-group { background: rgba(185, 140, 255, 0.14); color: #dcc8ff; }
 
 .warn-banner { background: rgba(242, 180, 65, 0.12); border-color: var(--pending); color: #ffe2a8; }
+
+/* Ninangs tab */
+.person-meta.nn-wide { grid-column: 1 / -1; }
+.nn-edit { align-items: center; }
+.nn-edit .nn-cash {
+  width: 130px; min-height: 36px; padding: 6px 10px; border-radius: 8px; border: 1px solid var(--line);
+  background: transparent; color: var(--text); font: inherit; font-size: 16px;
+}

@@ -155,12 +155,16 @@
     });
     $('tab-overview').hidden = tab !== 'overview';
     $('tab-sponsors').hidden = tab !== 'sponsors';
-    $('tab-list').hidden = tab === 'overview' || tab === 'sponsors';
+    $('tab-ninangs').hidden = tab !== 'ninangs';
+    $('tab-list').hidden = tab === 'overview' || tab === 'sponsors' || tab === 'ninangs';
     if (tab === 'overview') {
       loadOverview();
     } else if (tab === 'sponsors') {
       renderSponsors();
       loadSponsors();
+    } else if (tab === 'ninangs') {
+      renderNinangs();
+      loadNinangs();
     } else {
       setupListView(tab);
       loadList(tab);
@@ -233,7 +237,8 @@
     $('lnBill').textContent = '-' + peso(b.venueBill);
     $('lnBillHow').textContent = b.headcountConfirmed + ' heads × ' + peso(b.costPerHead);
     $('lnSponsor').textContent = peso(b.sponsorCashReceived || 0);
-    $('lnSponsorHow').textContent = b.sponsorCashPledged ? peso(b.sponsorCashPledged) + ' more pledged' : 'from the Sponsors tab';
+    $('lnSponsorHow').textContent = 'brands ' + peso(b.brandCashReceived || 0) + ' + Ninangs ' + peso(b.ninangCashReceived || 0) +
+      (b.sponsorCashPledged ? ' · ' + peso(b.sponsorCashPledged) + ' more pledged by brands' : '');
     var s = $('lnSurplus');
     s.textContent = peso(b.surplus);
     s.className = b.surplus < 0 ? 'neg' : 'pos';
@@ -245,13 +250,11 @@
     }
 
     // Coverage
-    $('cvFree').textContent = b.freeTotal;
     $('cvCost').textContent = peso(b.freeCost);
-    if (b.sponsorCashReceived) {
-      $('cvCost').parentNode.querySelector('.cover-lbl').innerHTML = '';
-      var lbl = $('cvCost').parentNode.querySelector('.cover-lbl');
-      lbl.appendChild(document.createTextNode('cost of ' + b.freeTotal + ' free passes; sponsors cover ' + peso(Math.min(b.freeCost, b.sponsorCashReceived))));
-    }
+    // The label is rewritten in full each time (it used to hold a <b> that got removed).
+    $('cvCost').parentNode.querySelector('.cover-lbl').textContent =
+      'cost of ' + b.freeTotal + ' free ' + plural(b.freeTotal, 'pass', 'passes') +
+      (b.sponsorCashReceived ? '; sponsors and Ninangs cover ' + peso(Math.min(b.freeCost, b.sponsorCashReceived)) : '');
     $('cvNeeded').textContent = b.paidNeededToCover === null ? 'n/a' : b.paidNeededToCover;
     $('cvMore').textContent = b.morePaidNeeded === null ? 'n/a' : b.morePaidNeeded;
     $('cvAfford').textContent = b.freePassesAffordableNow;
@@ -837,6 +840,7 @@
 
   function setupSponsors() {
     $('spSearch').addEventListener('input', renderSponsors);
+    $('nnSearch').addEventListener('input', renderNinangs);
     $('spAddBtn').addEventListener('click', function () { openSponsorEditor(null); });
     $('spSeedBtn').addEventListener('click', function () {
       var btn = $('spSeedBtn');
@@ -871,13 +875,178 @@
     });
   }
 
+  // ---------- ninangs ----------
+  var ninangs = null;
+  var nnFilter = 'All';
+  var NN_PILL = { 'Pending Verification': 'pill-pending', Received: 'pill-ok', 'Payment Issue': 'pill-bad', Cancelled: 'pill-muted' };
+
+  function loadNinangs() {
+    if (!ninangs) $('nnSummary').textContent = 'Loading…';
+    return dash('ninangs').then(function (res) {
+      if (!res.ok) { if (res.code !== 'AUTH') showError(res.error); return; }
+      showError('');
+      ninangs = res;
+      $('countNinangs').textContent = res.rows.length || '';
+      if (currentTab === 'ninangs') renderNinangs();
+    });
+  }
+
+  function nnLine(text, cls) {
+    var d = document.createElement('div');
+    d.className = 'person-meta nn-wide' + (cls ? ' ' + cls : '');
+    d.textContent = text;
+    return d;
+  }
+
+  function nnLink(href, text) {
+    var a = document.createElement('a');
+    a.href = href;
+    a.target = '_blank';
+    a.rel = 'noopener';
+    a.textContent = text;
+    return a;
+  }
+
+  function renderNinangs() {
+    var admin = isAdmin();
+    $('nnViewOnly').hidden = admin;
+    if (!ninangs) return;
+    var t = ninangs.totals;
+    $('nnCash').textContent = peso(t.cashReceived);
+    $('nnPendingCash').textContent = peso(t.cashPending);
+    $('nnReceived').textContent = t.received;
+    $('nnItems').textContent = t.itemPledges;
+
+    var counts = {};
+    ninangs.rows.forEach(function (r) { counts[r.status] = (counts[r.status] || 0) + 1; });
+    var f = $('nnFilter');
+    f.textContent = '';
+    ['All'].concat(ninangs.statuses).forEach(function (st) {
+      var n = st === 'All' ? ninangs.rows.length : (counts[st] || 0);
+      if (st !== 'All' && !n && st !== nnFilter) return;
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'filter-chip' + (nnFilter === st ? ' active' : '');
+      b.textContent = st + ' ' + n;
+      b.addEventListener('click', function () { nnFilter = st; renderNinangs(); });
+      f.appendChild(b);
+    });
+
+    var q = $('nnSearch').value.trim().toLowerCase();
+    var rows = ninangs.rows.filter(function (r) {
+      if (nnFilter !== 'All' && r.status !== nnFilter) return false;
+      if (!q) return true;
+      return [r.id, r.name, r.wallName, r.items, r.message, r.note, r.reference || '', r.email || ''].join(' ').toLowerCase().indexOf(q) !== -1;
+    });
+    $('nnSummary').textContent = rows.length + ' shown';
+    $('nnEmpty').hidden = rows.length > 0;
+    $('nnEmpty').textContent = ninangs.rows.length ? 'No Ninangs match.' : 'No Ninang pledges yet. Share the /ninang/ page to get started.';
+
+    var ul = $('nnList');
+    ul.textContent = '';
+    rows.forEach(function (r) {
+      var li = document.createElement('li');
+      li.className = 'person' + (r.status === 'Cancelled' ? ' inactive' : '');
+      var name = document.createElement('div');
+      name.className = 'person-name';
+      name.textContent = r.name + (r.showAs === 'Anonymous' ? ' · Anonymous' : '');
+      var pill = document.createElement('span');
+      pill.className = 'pill ' + (NN_PILL[r.status] || 'pill-muted');
+      pill.textContent = r.status;
+      li.appendChild(name);
+      li.appendChild(pill);
+
+      li.appendChild(nnLine(r.id + ' · ' + r.at + ' · ' + r.giving +
+        (r.showAs === 'Anonymous' ? ' · wall: Anonymous Ninang' : (r.wallName ? ' · wall: ' + r.wallName : ''))));
+      if (r.cashAmount != null) {
+        var cash = nnLine('Cash: ' + peso(r.cashAmount) + ' pledged' +
+          (r.cashReceived != null ? ' · ' + peso(r.cashReceived) + ' received' : '') + (r.reference ? ' · Ref ' + r.reference : ''));
+        if (r.screenshot) { cash.appendChild(document.createTextNode(' · ')); cash.appendChild(nnLink(r.screenshot, 'screenshot')); }
+        li.appendChild(cash);
+      }
+      if (r.items) {
+        li.appendChild(nnLine('Items: ' + r.items + (r.itemQuantity ? ' (' + r.itemQuantity + ')' : '') + ' · ' + r.handover +
+          (r.itemsReceived ? ' · received: ' + r.itemsReceived : '')));
+        if (r.pickupNotes) li.appendChild(nnLine('Pickup: ' + r.pickupNotes));
+      }
+      if (r.message) li.appendChild(nnLine('Message for SSOB: "' + r.message + '"', 'sp-tie'));
+      if (admin && (r.email || r.mobile || r.facebook)) {
+        var c = nnLine([r.email, r.mobile].filter(Boolean).join(' · '));
+        if (r.facebook) { c.appendChild(document.createTextNode(' · ')); c.appendChild(nnLink(r.facebook, 'Facebook')); }
+        li.appendChild(c);
+      }
+      if (r.note) li.appendChild(nnLine('Notes: ' + r.note));
+      if (r.statusEmail) li.appendChild(nnLine('Email: ' + r.statusEmail));
+
+      if (admin) {
+        var bar = document.createElement('div');
+        bar.className = 'person-actions nn-edit';
+        var sel = document.createElement('select');
+        sel.className = 'sp-status-select';
+        sel.setAttribute('aria-label', 'Status of ' + r.name);
+        ninangs.statuses.forEach(function (st) {
+          var o = document.createElement('option');
+          o.textContent = st;
+          if (st === r.status) o.selected = true;
+          sel.appendChild(o);
+        });
+        bar.appendChild(sel);
+        var cashIn = null;
+        if (r.cashAmount != null) {
+          cashIn = document.createElement('input');
+          cashIn.type = 'text';
+          cashIn.inputMode = 'decimal';
+          cashIn.className = 'nn-cash';
+          cashIn.placeholder = 'Cash received';
+          cashIn.setAttribute('aria-label', 'Cash received');
+          cashIn.value = r.cashReceived != null ? r.cashReceived : '';
+          bar.appendChild(cashIn);
+        }
+        var itemsSel = null;
+        if (r.items) {
+          itemsSel = document.createElement('select');
+          itemsSel.className = 'sp-status-select';
+          itemsSel.setAttribute('aria-label', 'Items received');
+          ['No', 'Partly', 'Yes'].forEach(function (v) {
+            var o = document.createElement('option');
+            o.value = v;
+            o.textContent = 'Items: ' + v;
+            if (v === (r.itemsReceived || 'No')) o.selected = true;
+            itemsSel.appendChild(o);
+          });
+          bar.appendChild(itemsSel);
+        }
+        bar.appendChild(chip('Save', '', function (btn) {
+          var fields = { status: sel.value };
+          if (cashIn) fields.cashReceived = cashIn.value.trim();
+          if (itemsSel) fields.itemsReceived = itemsSel.value;
+          btn.disabled = true;
+          dash('ninangSave', { id: r.id, fields: fields }).then(function (res) {
+            btn.disabled = false;
+            if (!res.ok) { toast(res.error || 'Could not save.'); return; }
+            if (res.budget) budget = res.budget;
+            var i = ninangs.rows.findIndex(function (x) { return x.id === r.id; });
+            if (i !== -1) ninangs.rows[i] = res.record;
+            ninangs.totals = res.totals;
+            renderNinangs();
+            var emailNote = (fields.status === 'Received' || fields.status === 'Payment Issue') && fields.status !== r.status
+              ? ' The email goes out within a minute.' : '';
+            toast('Saved ' + r.id + '.' + emailNote, 4500);
+          });
+        }));
+        li.appendChild(bar);
+      }
+      ul.appendChild(li);
+    });
+  }
+
   // ---------- start ----------
   function refresh() {
     var btn = $('refreshBtn');
     btn.classList.add('spin');
     var p = currentTab === 'overview'
       ? loadOverview()
-      : Promise.all([loadOverview(), currentTab === 'sponsors' ? loadSponsors() : loadList(currentTab)]);
+      : Promise.all([loadOverview(), currentTab === 'sponsors' ? loadSponsors() : currentTab === 'ninangs' ? loadNinangs() : loadList(currentTab)]);
     return p.then(function () { btn.classList.remove('spin'); }, function () { btn.classList.remove('spin'); });
   }
 
@@ -889,6 +1058,7 @@
     // Warm the tab counts and lists in the background.
     TYPES.forEach(function (t) { loadList(t); });
     loadSponsors();
+    loadNinangs();
     clearInterval(refreshTimer);
     refreshTimer = setInterval(function () {
       if (!session || document.hidden) return;

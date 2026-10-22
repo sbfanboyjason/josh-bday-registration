@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Be a Ninang · GAME TIME: SSOB's Birthday Celebration</title>
+<meta name="description" content="Be a Ninang of GAME TIME, the fan-organized birthday celebration for SSOB of SB19. Give cash, items or both, any amount from the heart." />
+<meta property="og:type" content="website" />
+<meta property="og:title" content="Be a Ninang of GAME TIME" />
+<meta property="og:description" content="Help us celebrate SSOB's birthday on November 14. Give cash, items or both, any amount from the heart." />
+<meta property="og:url" content="https://sbfanboyjason.github.io/josh-bday-registration/ninang/" />
+<meta property="og:image" content="https://sbfanboyjason.github.io/josh-bday-registration/assets/ninang-share.jpg" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta name="twitter:card" content="summary_large_image" />
+<link rel="icon" type="image/png" href="../assets/favicon.png" />
+<link rel="icon" href="../assets/favicon.ico" sizes="any" />
+<link rel="apple-touch-icon" href="../assets/apple-touch-icon.png" />
+<link rel="stylesheet" href="../assets/styles.css" />
+<link rel="stylesheet" href="ninang.css" />
+<link rel="stylesheet" href="../shared/credit-footer.css" />
+</head>
+<body>
+<main>
+  <div class="wrap">
+
+    <div class="hero">
+      <img class="hero-banner" src="../assets/hero.jpg" width="1200" height="982"
+           alt="GAME TIME: The Never Growing Old SSOB's Birthday Celebration, November 14, 2026" />
+      <h1 class="ninang-title">Be a Ninang</h1>
+      <p class="ninang-lead">Help us give SSOB a birthday to remember. Give cash, items or both. There is no minimum: any amount from the heart is welcome.</p>
+      <div class="event-meta">
+        <span>Sat, November 14, 2026 · 5:00 PM onwards</span>
+        <span>Teaspoon Cafe, Tondo, Manila</span>
+      </div>
+    </div>
+
+    <div class="card ninang-where">
+      <h2>Where your gift goes</h2>
+      <ul>
+        <li>Food and freebies for the A'TIN and BBQs celebrating with us</li>
+        <li>Free passes for our guests, volunteers and the team running the event</li>
+        <li>Loot bags and prizes for the GAME TIME rounds</li>
+      </ul>
+      <p class="hint">Every Ninang is thanked on the Ninang wall below once the gift is received. You can also choose to stay anonymous.</p>
+    </div>
+
+    <section class="card ninang-wall" id="wall" aria-labelledby="wallTitle">
+      <h2 id="wallTitle">Our Ninangs</h2>
+      <p class="hint" id="wallCount">Loading…</p>
+      <ul class="wall-list" id="wallList"></ul>
+    </section>
+
+    <div class="status-banner" id="statusBanner"></div>
+
+    <form id="ninangForm" novalidate>
+      <div style="position:absolute; left:-9999px; top:-9999px;" aria-hidden="true">
+        <label for="website">Leave this field blank</label>
+        <input type="text" id="website" name="website" tabindex="-1" autocomplete="off" />
+      </div>
+
+      <div class="card">
+        <h2>Your details</h2>
+        <div class="name-row">
+          <div class="field" id="field-firstName">
+            <label for="firstName">First Name</label>
+            <input type="text" id="firstName" autocomplete="given-name" maxlength="60" required />
+            <div class="error">Please enter your first name.</div>
+          </div>
+          <div class="field" id="field-lastName">
+            <label for="lastName">Last Name</label>
+            <input type="text" id="lastName" autocomplete="family-name" maxlength="60" required />
+            <div class="error">Please enter your last name.</div>
+          </div>
+        </div>
+        <div class="field" id="field-email">
+          <label for="email">Email Address</label>
+          <input type="email" id="email" autocomplete="email" required />
+          <div class="hint">We send your pledge copy and thank-you note here.</div>
+          <div class="error">Please enter a valid email address.</div>
+        </div>
+        <div class="field" id="field-phone">
+          <label for="phone">Mobile Number</label>
+          <input type="tel" id="phone" placeholder="09XXXXXXXXX" autocomplete="tel" required />
+          <div class="hint">So we can reach you about your gift, e.g. 09171234567.</div>
+          <div class="error">Please enter a valid Philippine mobile number.</div>
+        </div>
+        <div class="field" id="field-facebook">
+          <label for="facebook">Facebook Profile Link</label>
+          <input type="url" id="facebook" inputmode="url" placeholder="facebook.com/jeizone" maxlength="200" required />
+          <div class="hint">Copy it from your Facebook profile, e.g. facebook.com/jeizone</div>
+          <div class="error">Please enter your Facebook profile link, e.g. facebook.com/jeizone</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>How should we thank you?</h2>
+        <fieldset class="field" id="field-showAs">
+          <legend class="visually-hidden">How should we thank you?</legend>
+          <div class="choice-stack">
+            <label class="choice"><input type="radio" name="showAs" value="Name" /><span>Show my name on the Ninang wall</span></label>
+            <label class="choice"><input type="radio" name="showAs" value="Anonymous" /><span>Thank me as Anonymous Ninang</span></label>
+          </div>
+          <div class="error">Please choose one.</div>
+        </fieldset>
+        <div class="field" id="field-wallName" hidden>
+          <label for="wallName">Name to show on the wall</label>
+          <input type="text" id="wallName" maxlength="60" placeholder="e.g. Juan Dela Cruz, or Ninang Juan" />
+          <div class="hint">Leave blank to use your first and last name.</div>
+        </div>
+        <p class="hint" id="anonNote" hidden>Your details stay with the team for our records only. On the wall and in shoutouts you appear as <strong>Anonymous Ninang</strong>.</p>
+      </div>
+
+      <div class="card">
+        <h2>What would you like to give?</h2>
+        <fieldset class="field" id="field-giving">
+          <legend class="visually-hidden">What would you like to give?</legend>
+          <div class="choice-row choice-3">
+            <label class="choice"><input type="radio" name="giving" value="Cash" /><span>Cash</span></label>
+            <label class="choice"><input type="radio" name="giving" value="Items" /><span>Items</span></label>
+            <label class="choice"><input type="radio" name="giving" value="Cash and items" /><span>Both</span></label>
+          </div>
+          <div class="error">Please choose cash, items or both.</div>
+        </fieldset>
+      </div>
+
+      <div class="card" id="cashCard" hidden>
+        <h2>Cash gift via GCash</h2>
+        <div class="official-box">
+          <strong>Official GCash for GAME TIME</strong>
+          <span id="gcashLine"></span>
+          <small>This is the only account we use. If anyone asks you to send to a different account, it is not us.</small>
+        </div>
+        <div class="qr-wrap">
+          <p class="hint" style="margin-bottom:8px">Scan to send via GCash. Tap the QR to enlarge.</p>
+          <img id="gcashQrThumb" class="qr-thumb" src="../assets/gcash-qr.jpg" alt="GCash QR code" />
+        </div>
+        <div class="field" id="field-amount">
+          <label for="cashAmount">Amount you sent (₱)</label>
+          <input type="text" id="cashAmount" inputmode="decimal" placeholder="Any amount" maxlength="12" />
+          <div class="hint">No minimum. Any amount from the heart.</div>
+          <div class="error">Please enter the amount you sent, for example 500.</div>
+        </div>
+        <div class="field" id="field-reference">
+          <label for="paymentReference">GCash Reference Number</label>
+          <input type="text" id="paymentReference" maxlength="60" />
+          <div class="hint">Copy it exactly from your GCash receipt.</div>
+          <div class="error">Please enter your GCash reference number.</div>
+        </div>
+        <div class="field" id="field-screenshot">
+          <label>GCash Screenshot</label>
+          <div class="upload-box" id="uploadBox">
+            <span id="uploadBoxText">Tap to upload a screenshot of your GCash receipt (max <span id="maxMb"></span>MB)</span>
+            <input type="file" id="screenshotInput" accept="image/*" style="display:none" />
+          </div>
+          <img id="uploadPreview" class="upload-preview" alt="Payment screenshot preview" />
+          <div class="error">Please upload a screenshot of your GCash payment.</div>
+        </div>
+      </div>
+
+      <div class="card" id="itemsCard" hidden>
+        <h2>Items</h2>
+        <div class="field" id="field-items">
+          <label for="items">What would you like to give?</label>
+          <textarea id="items" rows="3" maxlength="500" placeholder="e.g. 125 pieces of candy for the loot bags, or a SB19 album for the raffle"></textarea>
+          <div class="hint">Loot bag items (125 or more pieces), prizes for the games, food or drinks are all welcome.</div>
+          <div class="error">Please tell us what items you would like to give.</div>
+        </div>
+        <div class="field">
+          <label for="itemQuantity">How many? <span class="hint-inline">(optional)</span></label>
+          <input type="text" id="itemQuantity" maxlength="60" placeholder="e.g. 125 pieces" />
+        </div>
+        <fieldset class="field" id="field-handover">
+          <legend>How will we get them?</legend>
+          <div class="choice-stack">
+            <label class="choice"><input type="radio" name="handover" value="I will deliver" /><span>I will deliver them</span></label>
+            <label class="choice"><input type="radio" name="handover" value="Please pick up" /><span>Please pick them up</span></label>
+          </div>
+          <div class="error">Please choose one.</div>
+        </fieldset>
+        <div class="field" id="field-pickup" hidden>
+          <label for="pickupNotes">Pickup address or area, and a good time</label>
+          <textarea id="pickupNotes" rows="2" maxlength="500" placeholder="e.g. Sampaloc, Manila. Weekday evenings after 6 PM."></textarea>
+          <div class="error">Please give the pickup address or area, and a good time to pick up.</div>
+        </div>
+        <p class="hint" id="deliverNote" hidden>We will message you with where and when to drop them off.</p>
+      </div>
+
+      <div class="card">
+        <h2>A birthday message for SSOB <span class="hint-inline">(optional)</span></h2>
+        <div class="field">
+          <textarea id="message" rows="3" maxlength="500" placeholder="Write a short greeting for Josh. We may read some of them during the program."></textarea>
+        </div>
+      </div>
+
+      <div class="card">
+        <details class="dpa-details">
+          <summary>Data Privacy Notice</summary>
+          <div class="consent-box">
+            <p>By sending this form, you allow the organizers of GAME TIME to collect and use your name, email, mobile number,
+            Facebook profile link, what you are giving, your GCash reference and screenshot (for cash gifts), pickup details
+            (for items you want picked up) and your birthday message, only to verify and receive your gift, contact you about
+            it, and thank you as you chose (by name, or as Anonymous Ninang).</p>
+            <p>We do not sell or share your details. If you chose Anonymous, your name is never shown publicly. We keep
+            this information only until the event is finished and any concerns are settled, then delete it.</p>
+            <p>Under the Data Privacy Act of 2012 (RA 10173), you can ask to see, correct or delete your data, or file a
+            complaint with the National Privacy Commission. Email sbfanboyjason@gmail.com for any privacy concern.</p>
+          </div>
+        </details>
+        <label class="checkbox-row" id="field-dpa">
+          <input type="checkbox" id="dpaCheckbox" />
+          <span>I have read the Data Privacy Notice and agree to it.</span>
+        </label>
+      </div>
+
+      <button type="submit" class="btn btn-primary" id="submitBtn">Send My Pledge</button>
+    </form>
+
+    <div id="successPanel" class="card success-card" style="display:none">
+      <h2>Salamat, Ninang! 💖</h2>
+      <p>Your Ninang ID is <span class="reg-id" id="successId"></span>.</p>
+      <p id="successText"></p>
+      <button type="button" class="btn btn-secondary" id="shareBtn">Share this page</button>
+    </div>
+
+    <section class="faq" aria-labelledby="faqTitle">
+      <h2 id="faqTitle">Questions</h2>
+      <details class="faq-item"><summary>Is there a minimum amount?</summary><div class="faq-answer"><p>No. Any amount from the heart is welcome, and so are items.</p></div></details>
+      <details class="faq-item"><summary>When will my name appear on the wall?</summary><div class="faq-answer"><p>Once our team has checked your GCash payment or received your items. We email you when that happens.</p></div></details>
+      <details class="faq-item"><summary>Can I give without my name being shown?</summary><div class="faq-answer"><p>Yes. Choose Anonymous Ninang. We still keep your details for our records, but your name is not shown on the wall or in shoutouts.</p></div></details>
+      <details class="faq-item"><summary>What items are helpful?</summary><div class="faq-answer"><p>Loot bag items (125 or more pieces so everyone gets one), prizes for the game rounds, and food or drinks. If you are not sure, message us first.</p></div></details>
+      <details class="faq-item"><summary>Is this an official SB19 event?</summary><div class="faq-answer"><p>No. GAME TIME is organized by fans, SB19 A'tin Fanboys, and is not an official SB19 or management event.</p></div></details>
+      <details class="faq-item"><summary>Who do I contact?</summary><div class="faq-answer"><p>Email <a href="mailto:sbfanboyjason@gmail.com">sbfanboyjason@gmail.com</a> or message <a href="https://m.me/sb19atinfanboys" target="_blank" rel="noopener">our Facebook page</a>. Include your Ninang ID if you have one.</p></div></details>
+    </section>
+
+    <p class="ninang-footer-link"><a href="../">Going to the party? Register for GAME TIME here.</a></p>
+  </div>
+</main>
+
+<div id="qrLightbox" class="qr-lightbox" hidden>
+  <img src="../assets/gcash-qr.jpg" alt="GCash QR code (enlarged)" />
+  <button type="button" id="qrLightboxClose" class="qr-lightbox-close" aria-label="Close">&times;</button>
+</div>
+
+<div id="confirmModal" class="modal-overlay" hidden>
+  <div class="modal-card">
+    <h2>Check your pledge</h2>
+    <div id="confirmBody"></div>
+    <div class="modal-actions">
+      <button type="button" class="btn btn-secondary" id="confirmEditBtn">Edit</button>
+      <button type="button" class="btn btn-primary" id="confirmSubmitBtn">Send Pledge</button>
+    </div>
+  </div>
+</div>
+
+<script src="../assets/config.js"></script>
+<script src="ninang.js"></script>
+<script src="../shared/credit-footer.js"></script>
+</body>
+</html>

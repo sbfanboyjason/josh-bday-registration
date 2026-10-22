@@ -47,6 +47,7 @@
     <button type="button" role="tab" class="tab" data-tab="Admin">Admin <span class="tab-count" id="countAdmin"></span></button>
     <button type="button" role="tab" class="tab" data-tab="Volunteer">Volunteers <span class="tab-count" id="countVolunteer"></span></button>
     <button type="button" role="tab" class="tab" data-tab="sponsors">Sponsors <span class="tab-count" id="countSponsors"></span></button>
+    <button type="button" role="tab" class="tab" data-tab="ninangs">Ninangs <span class="tab-count" id="countNinangs"></span></button>
   </nav>
 
   <main class="wrap">
@@ -148,6 +149,25 @@
       <p class="muted small" id="spSummary"></p>
       <ul class="people" id="spList"></ul>
       <p class="muted small center" id="spEmpty" hidden>No sponsors here yet.</p>
+    </section>
+
+    <!-- ===== NINANGS (individual, from the /ninang/ page) ===== -->
+    <section id="tab-ninangs" class="tab-panel" hidden>
+      <div class="cover-grid sponsor-stats">
+        <div class="cover-cell"><span class="cover-num" id="nnCash">₱0</span><span class="cover-lbl">cash received</span></div>
+        <div class="cover-cell"><span class="cover-num" id="nnPendingCash">₱0</span><span class="cover-lbl">cash still to check</span></div>
+        <div class="cover-cell"><span class="cover-num" id="nnReceived">0</span><span class="cover-lbl">received, on the wall</span></div>
+        <div class="cover-cell"><span class="cover-num" id="nnItems">0</span><span class="cover-lbl">pledges with items</span></div>
+      </div>
+      <p class="muted small">Public page: <a href="../ninang/" target="_blank" rel="noopener">/ninang/</a>. Check each GCash payment, then set Status to Received and tap Save. That sends the thank-you email and puts them on the Ninang wall (as Anonymous Ninang if they chose it).</p>
+      <p class="muted small" id="nnViewOnly" hidden>You can view this list. Only an Admin account can update Ninangs.</p>
+      <div class="status-filter" id="nnFilter" role="group" aria-label="Filter by status"></div>
+      <div class="list-tools">
+        <input type="search" id="nnSearch" placeholder="Search name, ID, items, message" aria-label="Search Ninangs" />
+      </div>
+      <p class="muted small" id="nnSummary"></p>
+      <ul class="people" id="nnList"></ul>
+      <p class="muted small center" id="nnEmpty" hidden>No Ninang pledges yet.</p>
     </section>
 
     <!-- ===== LIST TABS (one template, filled per type) ===== -->
