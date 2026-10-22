@@ -185,3 +185,5 @@
     font-size: 0.85rem;
   }
 }
+
+.ninang-where a, .card .hint a { color: var(--gold-soft); }

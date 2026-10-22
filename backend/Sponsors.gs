@@ -47,6 +47,14 @@ const SPONSORS = {
     'Last Updated',
     'Updated By',
     'Facebook Page', // added later, so it sits at the end and older columns keep their letters
+    // Filled by the Brand Ninang page (/brand-ninang/), also kept at the end.
+    'Pledged Via',
+    'Contact Position',
+    'Payment Method',
+    'GCash Reference',
+    'Payment Screenshot',
+    'Item Handover',
+    'Pickup Address / Notes',
   ],
   STATUSES: ['Not contacted', 'Emailed', 'Messaged', 'Followed up', 'Replied', 'Confirmed', 'Received', 'Declined', 'No reply'],
   // Statuses whose sponsors appear on the public page (if Show on Site = Yes).
@@ -61,6 +69,7 @@ const SPONSORS = {
     'Music / industry partner',
     'Local / small business',
     'Fan / individual',
+    'Brand Ninang page',
     'Other',
   ],
   PUBMAT: ['Not started', 'Drafted', 'Posted'],
@@ -418,11 +427,18 @@ function sponsorRecord_(row, staff) {
     source: String(c('Source') || ''),
     website: String(c('Website / Social') || ''),
     facebook: String(c('Facebook Page') || ''),
+    pledgedVia: String(c('Pledged Via') || ''),
+    paymentMethod: String(c('Payment Method') || ''),
+    handover: String(c('Item Handover') || ''),
   };
   if (staff.role === 'Admin') {
     rec.contactPerson = String(c('Contact Person') || '');
     rec.email = String(c('Email') || '');
     rec.mobile = String(c('Mobile') || '');
+    rec.position = String(c('Contact Position') || '');
+    rec.reference = String(c('GCash Reference') || '');
+    rec.screenshot = String(c('Payment Screenshot') || '');
+    rec.pickupNotes = String(c('Pickup Address / Notes') || '');
   }
   return rec;
 }
@@ -557,3 +573,251 @@ function dashSponsorSeed_(staff) {
   list.added = added;
   return list;
 }
+
+// ============================================================
+//  BRAND NINANG PAGE (/brand-ninang/)
+// ============================================================
+//  A brand pledges cash, products or both on the public page. The pledge
+//  lands in the Sponsors tab: on the brand's existing row if the name
+//  matches (e.g. a brand we already emailed), or as a new row in the
+//  "Brand Ninang page" group. Status becomes Replied so the team can check
+//  it and set Confirmed. Nothing shows publicly until the team does that.
+
+const BRAND_NINANG = {
+  GIVING: ['Cash', 'Products', 'Cash and products'],
+  PAYMENT: ['GCash now', 'Coordinate with the team'],
+  HANDOVER: ['We will deliver', 'Please pick up'],
+  MAX_LOGO_MB: 5,
+};
+
+function brandMoney_(v) {
+  const s = String(v == null ? '' : v).replace(/[₱,\s]/g, '').replace(/^php/i, '');
+  return /^\d+(\.\d{1,2})?$/.test(s) ? Number(s) : NaN;
+}
+
+function brandClean_(v, max) {
+  return String(v == null ? '' : v).replace(/\s+/g, ' ').trim().slice(0, max || SPONSORS.MAX_TEXT);
+}
+
+/** Returns an error message or null. Cleans the payload in place. */
+function validateBrandNinang_(p) {
+  if (!p) return 'Missing submission data.';
+  if (p[HONEYPOT_FIELD]) return 'Submission blocked.';
+  p.brand = brandClean_(p.brand, 100);
+  if (!p.brand) return 'Please enter your brand or company name.';
+  p.contactName = brandClean_(p.contactName, 100);
+  if (!p.contactName) return 'Please enter the name of the contact person.';
+  p.position = brandClean_(p.position, 100);
+  p.email = brandClean_(p.email, 120);
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(p.email)) return 'A valid email address is required.';
+  p.phone = String(p.phone || '').replace(/[\s\-()]/g, '');
+  if (!/^(\+?63|0)\d{9,10}$/.test(p.phone)) return 'Please enter a Philippine mobile or landline number, e.g. 09171234567.';
+  p.page = brandClean_(p.page, 300);
+  if (p.page && !/^https?:\/\//i.test(p.page)) p.page = 'https://' + p.page;
+  if (BRAND_NINANG.GIVING.indexOf(p.giving) === -1) return 'Please choose what you would like to give: cash, products, or both.';
+  const cash = p.giving !== 'Products';
+  const products = p.giving !== 'Cash';
+  if (cash) {
+    p.cashAmount = brandMoney_(p.cashAmount);
+    if (!(p.cashAmount > 0)) return 'Please enter the cash amount you are pledging.';
+    if (BRAND_NINANG.PAYMENT.indexOf(p.paymentMethod) === -1) return 'Please choose how you will send the cash.';
+    if (p.paymentMethod === 'GCash now') {
+      p.paymentReference = brandClean_(p.paymentReference, 60);
+      if (!p.paymentReference) return 'Please enter the GCash reference number.';
+      if (!p.paymentScreenshotBase64) return 'Please upload a screenshot of the GCash payment.';
+    } else {
+      p.paymentReference = '';
+      p.paymentScreenshotBase64 = '';
+    }
+  } else {
+    p.cashAmount = 0;
+    p.paymentMethod = '';
+    p.paymentReference = '';
+    p.paymentScreenshotBase64 = '';
+  }
+  if (products) {
+    p.products = brandClean_(p.products);
+    if (!p.products) return 'Please tell us what products you would like to give.';
+    p.productQuantity = brandClean_(p.productQuantity, 60);
+    p.productValue = p.productValue === '' || p.productValue == null ? 0 : brandMoney_(p.productValue);
+    if (!(p.productValue >= 0)) return 'Please enter the estimated value as a number, or leave it blank.';
+    if (BRAND_NINANG.HANDOVER.indexOf(p.handover) === -1) return 'Please choose whether you will deliver the products or want us to pick them up.';
+    p.pickupNotes = brandClean_(p.pickupNotes);
+    if (p.handover === 'Please pick up' && !p.pickupNotes) return 'Please give the pickup address and a good time to pick up.';
+  } else {
+    p.products = '';
+    p.productQuantity = '';
+    p.productValue = 0;
+    p.handover = '';
+    p.pickupNotes = '';
+  }
+  p.showOnSite = p.showOnSite === 'No' ? 'No' : 'Yes';
+  p.message = brandClean_(p.message);
+  if (!p.dpaConsent) return 'Please agree to the Data Privacy notice first.';
+  return null;
+}
+
+/** Saves an uploaded logo to Drive and returns a link that works in <img>. */
+function saveBrandLogo_(base64, filename, brand) {
+  if (!base64) return '';
+  const folder = getOrCreateDriveFolder();
+  const blob = Utilities.newBlob(Utilities.base64Decode(base64), guessContentType(filename),
+    'LOGO_' + String(brand).replace(/[^A-Za-z0-9]+/g, '_').slice(0, 40) + '_' + (filename || 'logo.png'));
+  const file = folder.createFile(blob);
+  file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+  return 'https://drive.google.com/thumbnail?id=' + file.getId() + '&sz=w600';
+}
+
+/** POST ?action=brandNinang */
+function handleBrandNinang_(e) {
+  const lock = LockService.getScriptLock();
+  try {
+    lock.waitLock(30000);
+    let p;
+    try { p = JSON.parse(e.postData.contents); } catch (err) { return jsonResponse({ ok: false, error: 'Malformed request.' }); }
+    const error = validateBrandNinang_(p);
+    if (error) return jsonResponse({ ok: false, error: error });
+    if (!getSwitch_('Brand Ninang Pledges Open')) {
+      return jsonResponse({ ok: false, error: 'Brand Ninang pledges are closed. For questions, email ' + CONFIG.ORGANIZER_CONTACT_EMAIL + '.' });
+    }
+
+    let sheet = sponsorSheet_();
+    if (!sheet) sheet = setupSponsorsSheet();
+    if (sheet.getLastColumn() < SPONSORS.HEADERS.length) {
+      sheet.getRange(1, 1, 1, SPONSORS.HEADERS.length).setValues([SPONSORS.HEADERS])
+        .setFontWeight('bold').setBackground('#111111').setFontColor('#ffffff');
+    }
+    const data = sheet.getRange(1, 1, Math.max(1, sheet.getLastRow()), SPONSORS.HEADERS.length).getValues();
+    const now = new Date();
+    const stamp = Utilities.formatDate(now, 'Asia/Manila', 'MMM d, h:mm a');
+    const key = p.brand.toLowerCase().replace(/[^a-z0-9]/g, '');
+    let idx = -1;
+    for (let i = 1; i < data.length; i++) {
+      const n = String(data[i][sponsorCol_('Name / Brand')] || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+      if (n && (n === key || n.indexOf(key) === 0 && key.length >= 4 || key.indexOf(n) === 0 && n.length >= 4)) { idx = i; break; }
+    }
+    const row = idx === -1 ? SPONSORS.HEADERS.map(function () { return ''; }) : data[idx].slice();
+    const id = idx === -1 ? sponsorNextId_(data) : String(row[sponsorCol_('Sponsor ID')]);
+    const notes = [];
+
+    let shot = '';
+    if (p.paymentScreenshotBase64) {
+      try { shot = saveScreenshotToDrive(p.paymentScreenshotBase64, p.paymentScreenshotFilename, id); }
+      catch (err) { notes.push('Payment screenshot upload failed; ask for it again.'); }
+    }
+    let logo = '';
+    if (p.logoBase64) {
+      try { logo = saveBrandLogo_(p.logoBase64, p.logoFilename, p.brand); }
+      catch (err) { notes.push('Logo upload failed; ask for it by email.'); }
+    }
+
+    const set = function (h, v) { row[sponsorCol_(h)] = typeof v === 'string' ? sanitizeForSheet_(v) : v; };
+    const setIfBlank = function (h, v) { if (v !== '' && !String(row[sponsorCol_(h)] || '').trim()) set(h, v); };
+    if (idx === -1) {
+      set('Sponsor ID', id);
+      set('Name / Brand', p.brand);
+      set('Group', 'Brand Ninang page');
+      set('Cash Received', 0);
+      set('Pubmat', 'Not started');
+      set('Source', 'Brand Ninang page');
+    }
+    set('Contact Person', p.contactName);
+    set('Contact Position', p.position);
+    set('Email', p.email);
+    set('Mobile', p.phone);
+    if (/facebook\.com|fb\.com/i.test(p.page)) setIfBlank('Facebook Page', normalizeFacebook_(p.page) || p.page);
+    else setIfBlank('Website / Social', p.page);
+    set('Offer Type', p.giving === 'Cash' ? 'Cash' : p.giving === 'Products' ? 'Products' : 'Mixed');
+    set('Offer Details', [p.products, p.productQuantity ? '(' + p.productQuantity + ')' : ''].filter(Boolean).join(' '));
+    set('Cash Pledged', p.cashAmount || 0);
+    set('Item Value (est.)', p.productValue || 0);
+    const st = String(row[sponsorCol_('Status')] || '');
+    if (['', 'Not contacted', 'Emailed', 'Messaged', 'Followed up', 'No reply', 'Declined'].indexOf(st) !== -1) set('Status', 'Replied');
+    set('Show on Site', p.showOnSite);
+    if (logo) set('Logo URL', logo);
+    set('Pledged Via', 'Brand Ninang page, ' + stamp);
+    set('Payment Method', p.paymentMethod);
+    set('GCash Reference', p.paymentReference);
+    if (shot) set('Payment Screenshot', shot);
+    set('Item Handover', p.handover);
+    set('Pickup Address / Notes', p.pickupNotes);
+    const prevNotes = String(row[sponsorCol_('Notes')] || '');
+    const newNote = ['[' + stamp + '] Pledged on the Brand Ninang page.', p.message ? 'Message: ' + p.message : '', notes.join(' ')].filter(Boolean).join(' ');
+    set('Notes', (prevNotes ? prevNotes + ' ' : '') + newNote);
+    set('Last Updated', now);
+    set('Updated By', 'Brand Ninang page');
+    if (idx === -1) sheet.appendRow(row);
+    else sheet.getRange(idx + 1, 1, 1, row.length).setValues([row]);
+
+    try {
+      if (mailQuotaLeft_() > CONFIG.QUOTA_RESERVE_FOR_QR) {
+        sendBrandPledgeEmail_(p, id);
+        sendBrandPledgeTeamAlert_(p, id);
+      }
+    } catch (err) {
+      console.error('brand pledge email: ' + err.message);
+    }
+    return jsonResponse({ ok: true, sponsorId: id });
+  } catch (err) {
+    return jsonResponse({ ok: false, error: 'Server error: ' + err.message });
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+function brandPledgeRows_(p, id) {
+  let rows = infoRow_('Reference', '<strong>' + escapeHtml_(id) + '</strong>') +
+    infoRow_('Brand', escapeHtml_(p.brand)) +
+    infoRow_('Contact', escapeHtml_(p.contactName + (p.position ? ', ' + p.position : '')));
+  if (p.cashAmount) {
+    rows += infoRow_('Cash', escapeHtml_(CONFIG.CURRENCY + Number(p.cashAmount).toLocaleString('en-US')) +
+      (p.paymentMethod === 'GCash now' ? ' via GCash (Ref. ' + escapeHtml_(p.paymentReference) + ')' : ', to coordinate with the team'));
+  }
+  if (p.products) {
+    rows += infoRow_('Products', escapeHtml_(p.products + (p.productQuantity ? ' (' + p.productQuantity + ')' : ''))) +
+      infoRow_('Handover', escapeHtml_(p.handover));
+  }
+  return rows;
+}
+
+function sendBrandPledgeEmail_(p, id) {
+  const next = [];
+  if (p.cashAmount && p.paymentMethod === 'GCash now') next.push('Our team checks your GCash payment against the reference number above.');
+  if (p.cashAmount && p.paymentMethod !== 'GCash now') next.push('We will reach out to arrange the cash sponsorship with you.');
+  if (p.products) next.push(p.handover === 'Please pick up' ? 'We will contact you to set a pickup time for the products.' : 'We will send you where and when to drop off the products.');
+  next.push('Once everything is confirmed, we post your "Thank you, Ninang" pubmat' + (p.showOnSite === 'Yes' ? ' and add your logo to our registration page.' : '.'));
+  const bodyHtml =
+    '<p>Hi ' + escapeHtml_(p.contactName.split(' ')[0]) + ',</p>' +
+    '<p>Thank you for being a Ninang of GAME TIME! 💖 We are so happy to have <strong>' + escapeHtml_(p.brand) +
+    '</strong> with us for SSOB\'s birthday celebration. Here is a copy of your pledge:</p>' +
+    infoBox_(brandPledgeRows_(p, id)) +
+    '<p><strong>What happens next</strong></p>' + stepsHtml_(next) +
+    '<p>For anything else, reply to <strong>' + CONFIG.ORGANIZER_CONTACT_EMAIL + '</strong> or message us at m.me/sb19atinfanboys.</p>' +
+    '<p>Salamat po, Ninang!<br>SB19 A\'tin Fanboys</p>';
+  const shell = buildEmailShell_({ pillLabel: 'Ninang Pledge Received', pillColor: '#ff6fae', pillTextColor: '#0a0a0a', bodyHtml: bodyHtml });
+  MailApp.sendEmail({
+    to: p.email,
+    replyTo: CONFIG.ORGANIZER_CONTACT_EMAIL,
+    subject: '[GAME TIME] Thank you, Ninang ' + p.brand + '! We got your pledge',
+    htmlBody: shell.html,
+    body: 'Hi ' + p.contactName + ',\n\nThank you for being a Ninang of GAME TIME! We got the pledge from ' + p.brand + ' (' + id + ') and will be in touch.\n\nSB19 A\'tin Fanboys',
+    name: 'SB19 A\'tin Fanboys',
+    inlineImages: shell.inlineImages,
+  });
+}
+
+/** A short heads-up to the team inbox, so new brand pledges are not missed. */
+function sendBrandPledgeTeamAlert_(p, id) {
+  MailApp.sendEmail({
+    to: CONFIG.ORGANIZER_CONTACT_EMAIL,
+    subject: '[GAME TIME] New brand Ninang pledge: ' + p.brand,
+    body: p.brand + ' pledged on the Brand Ninang page (' + id + ').\n\n' +
+      'Contact: ' + p.contactName + (p.position ? ', ' + p.position : '') + '\n' + p.email + ' · ' + p.phone + '\n' +
+      (p.cashAmount ? 'Cash: ' + CONFIG.CURRENCY + p.cashAmount + ' (' + p.paymentMethod + (p.paymentReference ? ', Ref ' + p.paymentReference : '') + ')\n' : '') +
+      (p.products ? 'Products: ' + p.products + (p.productQuantity ? ' (' + p.productQuantity + ')' : '') + ' · ' + p.handover + (p.pickupNotes ? ': ' + p.pickupNotes : '') + '\n' : '') +
+      (p.message ? 'Message: ' + p.message + '\n' : '') +
+      '\nCheck it in the Sponsors tab of the dashboard, then set the status to Confirmed.',
+    name: 'GAME TIME system',
+  });
+}
+

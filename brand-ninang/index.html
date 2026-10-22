@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<!-- Unlisted: shared only in our emails and Messenger messages to brands. -->
+<meta name="robots" content="noindex, nofollow" />
+<title>Be a Brand Ninang · GAME TIME: SSOB's Birthday Celebration</title>
+<meta property="og:type" content="website" />
+<meta property="og:title" content="Be a Ninang of GAME TIME" />
+<meta property="og:description" content="Partner with SB19 A'tin Fanboys for SSOB's birthday celebration on November 14, 2026." />
+<meta property="og:image" content="https://sbfanboyjason.github.io/josh-bday-registration/assets/brand-ninang-share.jpg" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<link rel="icon" type="image/png" href="../assets/favicon.png" />
+<link rel="icon" href="../assets/favicon.ico" sizes="any" />
+<link rel="stylesheet" href="../assets/styles.css" />
+<link rel="stylesheet" href="../ninang/ninang.css" />
+<link rel="stylesheet" href="../shared/credit-footer.css" />
+</head>
+<body>
+<main>
+  <div class="wrap">
+
+    <div class="hero">
+      <img class="hero-banner" src="../assets/hero.jpg" width="1200" height="982"
+           alt="GAME TIME: The Never Growing Old SSOB's Birthday Celebration, November 14, 2026" />
+      <h1 class="ninang-title">Be a Brand Ninang</h1>
+      <p class="ninang-lead">Thank you for considering GAME TIME! This short form tells us what your brand would like to share, so we can thank you properly.</p>
+      <div class="event-meta">
+        <span>Sat, November 14, 2026 · 5:00 PM onwards</span>
+        <span>Teaspoon Cafe, Tondo, Manila</span>
+        <span>125 A'TIN and BBQs</span>
+      </div>
+    </div>
+
+    <div class="card ninang-where">
+      <h2>What your brand gets</h2>
+      <ul>
+        <li>A "Thank you, Ninang" pubmat on our page, with your logo and your page tagged</li>
+        <li>Your name or logo on our event registration page, which every attendee opens</li>
+        <li>Shout-outs during the program, plus photos of fans with your items after the event</li>
+      </ul>
+      <p class="hint">Registration is now open. <a href="https://www.facebook.com/reel/3585838684905015" target="_blank" rel="noopener">See our announcement</a>.</p>
+    </div>
+
+    <div class="status-banner" id="statusBanner"></div>
+
+    <form id="brandForm" novalidate>
+      <div style="position:absolute; left:-9999px; top:-9999px;" aria-hidden="true">
+        <label for="website">Leave this field blank</label>
+        <input type="text" id="website" name="website" tabindex="-1" autocomplete="off" />
+      </div>
+
+      <div class="card">
+        <h2>Your brand</h2>
+        <div class="field" id="field-brand">
+          <label for="brand">Brand or company name</label>
+          <input type="text" id="brand" maxlength="100" autocomplete="organization" />
+          <div class="error">Please enter your brand or company name.</div>
+        </div>
+        <div class="name-row">
+          <div class="field" id="field-contactName">
+            <label for="contactName">Contact person</label>
+            <input type="text" id="contactName" maxlength="100" autocomplete="name" />
+            <div class="error">Please enter the contact person's name.</div>
+          </div>
+          <div class="field">
+            <label for="position">Position <span class="hint-inline">(optional)</span></label>
+            <input type="text" id="position" maxlength="100" placeholder="e.g. Marketing Officer" />
+          </div>
+        </div>
+        <div class="field" id="field-email">
+          <label for="email">Email address</label>
+          <input type="email" id="email" autocomplete="email" />
+          <div class="error">Please enter a valid email address.</div>
+        </div>
+        <div class="field" id="field-phone">
+          <label for="phone">Mobile or landline</label>
+          <input type="tel" id="phone" placeholder="09XXXXXXXXX" autocomplete="tel" />
+          <div class="error">Please enter a Philippine phone number, e.g. 09171234567.</div>
+        </div>
+        <div class="field">
+          <label for="page">Facebook page or website <span class="hint-inline">(optional, so we can tag you)</span></label>
+          <input type="text" id="page" maxlength="300" placeholder="facebook.com/yourbrand" />
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>What would you like to share?</h2>
+        <fieldset class="field" id="field-giving">
+          <legend class="visually-hidden">What would you like to share?</legend>
+          <div class="choice-row choice-3">
+            <label class="choice"><input type="radio" name="giving" value="Cash" /><span>Cash</span></label>
+            <label class="choice"><input type="radio" name="giving" value="Products" /><span>Products</span></label>
+            <label class="choice"><input type="radio" name="giving" value="Cash and products" /><span>Both</span></label>
+          </div>
+          <div class="error">Please choose cash, products or both.</div>
+        </fieldset>
+      </div>
+
+      <div class="card" id="cashCard" hidden>
+        <h2>Cash sponsorship</h2>
+        <div class="field" id="field-amount">
+          <label for="cashAmount">Amount (₱)</label>
+          <input type="text" id="cashAmount" inputmode="decimal" maxlength="12" placeholder="e.g. 5000" />
+          <div class="hint">Any amount you are comfortable with. It goes to the food, venue and program, and we will send you a short report of how it was used.</div>
+          <div class="error">Please enter the amount you are pledging.</div>
+        </div>
+        <fieldset class="field" id="field-payment">
+          <legend>How will you send it?</legend>
+          <div class="choice-stack">
+            <label class="choice"><input type="radio" name="paymentMethod" value="GCash now" /><span>Send via GCash now</span></label>
+            <label class="choice"><input type="radio" name="paymentMethod" value="Coordinate with the team" /><span>Coordinate with your team (bank transfer, check or invoice)</span></label>
+          </div>
+          <div class="error">Please choose one.</div>
+        </fieldset>
+        <div id="gcashPart" hidden>
+          <div class="official-box">
+            <strong>Official GCash for GAME TIME</strong>
+            <span id="gcashLine"></span>
+            <small>This is the only account we use.</small>
+          </div>
+          <div class="qr-wrap">
+            <p class="hint" style="margin-bottom:8px">Scan to send via GCash. Tap the QR to enlarge.</p>
+            <img id="gcashQrThumb" class="qr-thumb" src="../assets/gcash-qr.jpg" alt="GCash QR code" />
+          </div>
+          <div class="field" id="field-reference">
+            <label for="paymentReference">GCash reference number</label>
+            <input type="text" id="paymentReference" maxlength="60" />
+            <div class="error">Please enter the GCash reference number.</div>
+          </div>
+          <div class="field" id="field-screenshot">
+            <label>GCash screenshot</label>
+            <div class="upload-box" id="uploadBox">
+              <span id="uploadBoxText">Tap to upload a screenshot of the GCash receipt (max <span class="maxMb"></span>MB)</span>
+              <input type="file" id="screenshotInput" accept="image/*" style="display:none" />
+            </div>
+            <img id="uploadPreview" class="upload-preview" alt="Payment screenshot preview" />
+            <div class="error">Please upload a screenshot of the GCash payment.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" id="productsCard" hidden>
+        <h2>Products</h2>
+        <div class="field" id="field-products">
+          <label for="products">What products would you like to share?</label>
+          <textarea id="products" rows="3" maxlength="500" placeholder="e.g. 130 sample packs for the loot bags, or 5 gift sets as game prizes"></textarea>
+          <div class="hint">Loot bags need 125 or more pieces so every attendee gets one. A few items as prizes for the game rounds are also welcome.</div>
+          <div class="error">Please tell us what products you would like to share.</div>
+        </div>
+        <div class="name-row">
+          <div class="field">
+            <label for="productQuantity">How many? <span class="hint-inline">(optional)</span></label>
+            <input type="text" id="productQuantity" maxlength="60" placeholder="e.g. 130 pieces" />
+          </div>
+          <div class="field" id="field-value">
+            <label for="productValue">Estimated value, ₱ <span class="hint-inline">(optional)</span></label>
+            <input type="text" id="productValue" inputmode="decimal" maxlength="12" />
+            <div class="error">Please enter a number, or leave it blank.</div>
+          </div>
+        </div>
+        <fieldset class="field" id="field-handover">
+          <legend>How will we get them?</legend>
+          <div class="choice-stack">
+            <label class="choice"><input type="radio" name="handover" value="We will deliver" /><span>We will deliver them</span></label>
+            <label class="choice"><input type="radio" name="handover" value="Please pick up" /><span>Please pick them up</span></label>
+          </div>
+          <div class="error">Please choose one.</div>
+        </fieldset>
+        <div class="field" id="field-pickup" hidden>
+          <label for="pickupNotes">Pickup address and a good time</label>
+          <textarea id="pickupNotes" rows="2" maxlength="500" placeholder="e.g. Ortigas office, weekdays 9 AM to 5 PM. Ask for Ms. Reyes at the lobby."></textarea>
+          <div class="error">Please give the pickup address and a good time to pick up.</div>
+        </div>
+        <p class="hint" id="deliverNote" hidden>We will send you where and when to drop them off.</p>
+      </div>
+
+      <div class="card">
+        <h2>Your logo and credit</h2>
+        <div class="field">
+          <label>Logo <span class="hint-inline">(optional, PNG or JPG)</span></label>
+          <div class="upload-box" id="logoBox">
+            <span id="logoBoxText">Tap to upload your logo for the thank-you pubmat (max <span class="maxMb"></span>MB)</span>
+            <input type="file" id="logoInput" accept="image/png,image/jpeg" style="display:none" />
+          </div>
+          <img id="logoPreview" class="upload-preview" alt="Logo preview" />
+          <div class="hint">You can also email it to us later.</div>
+        </div>
+        <fieldset class="field">
+          <legend>Show your logo on our registration page?</legend>
+          <div class="choice-row">
+            <label class="choice"><input type="radio" name="showOnSite" value="Yes" checked /><span>Yes</span></label>
+            <label class="choice"><input type="radio" name="showOnSite" value="No" /><span>No</span></label>
+          </div>
+        </fieldset>
+        <div class="field">
+          <label for="message">Anything else we should know? <span class="hint-inline">(optional)</span></label>
+          <textarea id="message" rows="3" maxlength="500" placeholder="e.g. tagging instructions, product details, or questions for us"></textarea>
+        </div>
+      </div>
+
+      <div class="card">
+        <details class="dpa-details">
+          <summary>Data Privacy Notice</summary>
+          <div class="consent-box">
+            <p>By sending this form, you allow the organizers of GAME TIME (SB19 A'tin Fanboys) to use the contact details,
+            pledge details, payment proof and logo you give here only to coordinate your sponsorship, thank you publicly
+            as you chose, and contact you about it. We do not sell or share these details. We keep them until the event
+            is finished and any concerns are settled, then delete them.</p>
+            <p>Under the Data Privacy Act of 2012 (RA 10173), you can ask to see, correct or delete your data, or file a
+            complaint with the National Privacy Commission. Email sbfanboyjason@gmail.com for any privacy concern.</p>
+          </div>
+        </details>
+        <label class="checkbox-row" id="field-dpa">
+          <input type="checkbox" id="dpaCheckbox" />
+          <span>I have read the Data Privacy Notice and agree to it.</span>
+        </label>
+      </div>
+
+      <button type="submit" class="btn btn-primary" id="submitBtn">Send Our Pledge</button>
+    </form>
+
+    <div id="successPanel" class="card success-card" style="display:none">
+      <h2>Thank you, Ninang! 💖</h2>
+      <p>Your reference is <span class="reg-id" id="successId"></span>.</p>
+      <p id="successText"></p>
+    </div>
+
+    <section class="faq" aria-labelledby="faqTitle">
+      <h2 id="faqTitle">Questions</h2>
+      <details class="faq-item"><summary>Who is organizing this?</summary><div class="faq-answer"><p>SB19 A'tin Fanboys, a community of SB19 supporters. GAME TIME is a fan-organized celebration, not an official SB19 or management event.</p></div></details>
+      <details class="faq-item"><summary>Can we send an official receipt or invoice request?</summary><div class="faq-answer"><p>Yes. Choose "Coordinate with your team" and tell us what your company needs in the last box. We will reach out.</p></div></details>
+      <details class="faq-item"><summary>When will we see the thank-you pubmat?</summary><div class="faq-answer"><p>After we confirm your sponsorship. We post it on our Facebook page with your logo and your page tagged.</p></div></details>
+      <details class="faq-item"><summary>Who do we contact?</summary><div class="faq-answer"><p>Email <a href="mailto:sbfanboyjason@gmail.com">sbfanboyjason@gmail.com</a>, message <a href="https://m.me/sb19atinfanboys" target="_blank" rel="noopener">our Facebook page</a>, or call 0924 110 2340.</p></div></details>
+    </section>
+  </div>
+</main>
+
+<div id="qrLightbox" class="qr-lightbox" hidden>
+  <img src="../assets/gcash-qr.jpg" alt="GCash QR code (enlarged)" />
+  <button type="button" class="qr-lightbox-close" aria-label="Close">&times;</button>
+</div>
+
+<div id="confirmModal" class="modal-overlay" hidden>
+  <div class="modal-card">
+    <h2>Check your pledge</h2>
+    <div id="confirmBody"></div>
+    <div class="modal-actions">
+      <button type="button" class="btn btn-secondary" id="confirmEditBtn">Edit</button>
+      <button type="button" class="btn btn-primary" id="confirmSubmitBtn">Send Pledge</button>
+    </div>
+  </div>
+</div>
+
+<script src="../assets/config.js"></script>
+<script src="brand-ninang.js"></script>
+<script src="../shared/credit-footer.js"></script>
+</body>
+</html>

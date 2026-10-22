@@ -105,6 +105,16 @@ Money:
 
 What sponsors get: a shoutout pubmat and engagement, tracked in the Pubmat column (Not started, Drafted, Posted). Sponsors marked Confirmed or Received with Show on Site = Yes appear in a "Thank you to our sponsors" section at the bottom of the registration page. Paste an https logo link in Logo URL to show their logo instead of the name.
 
+## 6b. Brand Ninang page (unlisted)
+
+`https://sbfanboyjason.github.io/josh-bday-registration/brand-ninang/` is only shared inside the sponsor email and Messenger message. It is not linked from any public page, and it asks search engines not to list it.
+
+- A brand fills in its contact person, cash (sent by GCash now, or coordinated with the team for bank transfer, check or invoice), products (with delivery or pickup), and an optional logo.
+- The pledge goes into the Sponsors tab. If the brand is already on the list (for example a brand you emailed), its row is updated instead of making a duplicate. New brands go in the "Brand Ninang page" group.
+- Status becomes Replied. Nothing shows publicly until you check it and set Confirmed. Pledged cash counts only when you enter it in Cash Received.
+- The brand gets a "we got your pledge" email, and sbfanboyjason@gmail.com gets a short alert so new pledges are not missed.
+- To stop new brand pledges, set Brand Ninang Pledges Open to No in `_Config`.
+
 ## 7. Individual Ninangs (Be a Ninang page)
 
 Public page to share on social media: `https://sbfanboyjason.github.io/josh-bday-registration/ninang/`. It has its own share image, so a Facebook post shows "Be a Ninang" with the poster. The QR codes are in the delivery pack.

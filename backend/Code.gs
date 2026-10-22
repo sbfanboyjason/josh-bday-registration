@@ -240,6 +240,7 @@ function getSetting_(key) {
 const SWITCHES = [
   ['Registration Open', 'Yes', 'Type No to close the public form right away (people see "Registration is closed"). Yes to reopen.'],
   ['Ninang Pledges Open', 'Yes', 'Type No to close the Be a Ninang form. The Ninang wall stays up. Yes to reopen.'],
+  ['Brand Ninang Pledges Open', 'Yes', 'Type No to close the Brand Ninang form for companies. Yes to reopen.'],
 ];
 
 function getSwitch_(key) {
@@ -590,6 +591,7 @@ function doGet(e) {
  * POST <web-app-url>?action=checkin   → event-day scanner (Checkin.gs)
  * POST <web-app-url>?action=dash      → team dashboard (Dashboard.gs)
  * POST <web-app-url>?action=ninang    → Be a Ninang pledge (Ninangs.gs)
+ * POST <web-app-url>?action=brandNinang → Brand Ninang pledge (Sponsors.gs)
  *
  * Content-Type must be text/plain on the client side to avoid a CORS
  * preflight — see script.js / correct.js comments.
@@ -607,6 +609,9 @@ function doPost(e) {
   }
   if (action === 'ninang') {
     return handleNinangPledge_(e); // Be a Ninang form, see Ninangs.gs
+  }
+  if (action === 'brandNinang') {
+    return handleBrandNinang_(e); // Brand Ninang form, see Sponsors.gs
   }
   return handleNewRegistration(e);
 }

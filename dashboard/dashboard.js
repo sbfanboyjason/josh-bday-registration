@@ -672,6 +672,21 @@
         });
         li.appendChild(c);
       }
+      if (r.pledgedVia) {
+        var pv = document.createElement('div');
+        pv.className = 'person-meta sp-tie';
+        var bits = ['Pledged via ' + r.pledgedVia];
+        if (r.paymentMethod) bits.push(r.paymentMethod + (r.reference ? ' · Ref ' + r.reference : ''));
+        if (r.handover) bits.push('Products: ' + r.handover + (r.pickupNotes ? ' (' + r.pickupNotes + ')' : ''));
+        if (r.position) bits.push('Contact position: ' + r.position);
+        pv.textContent = bits.join(' · ') + ' ';
+        if (r.screenshot && /^https?:\/\//i.test(r.screenshot)) {
+          var sa = document.createElement('a');
+          sa.href = r.screenshot; sa.target = '_blank'; sa.rel = 'noopener'; sa.textContent = 'payment screenshot';
+          pv.appendChild(sa);
+        }
+        li.appendChild(pv);
+      }
       if (r.notes) {
         var n = document.createElement('div');
         n.className = 'person-meta sp-tie';

@@ -19,6 +19,8 @@ var SPONSOR_EMAIL = {
   SITE: 'https://sbfanboyjason.github.io/josh-bday-registration/',
   // Our public announcement that registration is open (Facebook reel).
   PUBMAT: 'https://www.facebook.com/reel/3585838684905015',
+  // Unlisted Brand Ninang form, shared only in this letter.
+  FORM: 'https://sbfanboyjason.github.io/josh-bday-registration/brand-ninang/',
 
   // Guest names are not final yet, so the letter describes them in general
   // (guestsIntro below). To list names again, add [name, Facebook link, note].
@@ -58,7 +60,7 @@ var SPONSOR_EMAIL = {
     'Your brand in front of fans who make a point of supporting SB19\'s partner brands.',
   ],
 
-  nextStep: 'If you would like to join, we would appreciate hearing from you at your earliest convenience, so we can include {{BRAND}} in our pubmats and program. For products, you are welcome to deliver them to us, or our team can pick them up from you, whichever works best for you. We are happy to answer any questions by phone, email or Messenger.',
+  nextStep: 'If you would like to join, please fill in our short Brand Ninang form at your earliest convenience, so we can include {{BRAND}} in our pubmats and program. You can also simply reply to this email. For products, you are welcome to deliver them to us, or our team can pick them up from you, whichever works best for you. We are happy to answer any questions by phone, email or Messenger.',
 
   thanks: 'Thank you for considering this. It would mean a lot to the A\'TIN community to celebrate Josh\'s birthday with {{BRAND}} as our Ninang.',
 
@@ -76,7 +78,7 @@ var SPONSOR_EMAIL = {
     S.products.forEach(function (p) { L.push('- ' + p[0] + ': ' + p[1]); });
     L.push('', S.mix, '', 'WHAT YOU GET AS OUR NINANG');
     S.benefits.forEach(function (b) { L.push('- ' + b); });
-    L.push('', 'NEXT STEP', S.nextStep, '', S.thanks, '',
+    L.push('', 'NEXT STEP', S.nextStep, 'Brand Ninang form: ' + S.FORM, '', S.thanks, '',
       'Sincerely,', 'SB19 A\'tin Fanboys', 'Mobile: ' + S.MOBILE, 'Email: ' + S.EMAIL, 'Messenger: ' + S.MESSENGER);
     return L.join('\n');
   },
@@ -115,7 +117,10 @@ var SPONSOR_EMAIL = {
       '• Your name or logo on our event registration page',
       '• Shout-outs during the program, plus photos of fans with your items after the event',
       '',
-      'If you would like to join, just reply here in this thread at your earliest convenience. For products, you can deliver them to us, or our team can pick them up from you, whichever works best for you. We are happy to answer any questions here too.',
+      'If you would like to join, please fill in our short Brand Ninang form at your earliest convenience, or just reply here in this thread:',
+      '👉 ' + S.FORM,
+      '',
+      'For products, you can deliver them to us, or our team can pick them up from you, whichever works best for you. We are happy to answer any questions here too.',
       '',
       'Thank you so much for considering this! 🙏',
       '',
@@ -188,6 +193,9 @@ var SPONSOR_EMAIL = {
       box(bullets(S.benefits.map(esc))) +
       H('NEXT STEP') +
       '<p style="' + P + '">' + esc(S.nextStep) + '</p>' +
+      '<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:6px 0 18px;"><tr><td bgcolor="#ff4f9a" style="border-radius:10px;background:#ff4f9a;">' +
+      '<a href="' + esc(S.FORM) + '" style="display:inline-block;padding:14px 26px;' + FONT + 'font-size:15px;font-weight:bold;color:#0e0409;text-decoration:none;border-radius:10px;">Fill in the Brand Ninang form</a>' +
+      '</td></tr></table>' +
       '<p style="' + P + '">' + esc(S.thanks) + '</p>' +
       '<p style="' + P + 'margin-top:22px;">Sincerely,<br><strong style="color:#ffc6de;">SB19 A\'tin Fanboys</strong><br>' +
       'Mobile: ' + esc(S.MOBILE) + '<br>' +
