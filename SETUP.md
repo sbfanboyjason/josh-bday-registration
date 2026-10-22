@@ -90,9 +90,11 @@ The starter list has 38 brands. Most are SB19 endorsements from news reports, pl
 
 Each sponsor card on the dashboard has Copy invitation, which copies the themed GAME TIME letter with the brand's name filled in and the guests' names linked to their Facebook pages. Write in Gmail copies it the same way and opens a draft from sbfanboyjason@gmail.com with the recipient and subject filled in. Click in the message, paste (Ctrl+V), send it yourself, then set the status to Emailed. Copy plain text gives a version without design, for Messenger or Facebook. Paste on a computer: the Gmail phone app may drop some of the design. The letter is in `dashboard/sponsor-email.js` (copy in SPONSOR-EMAIL.md). The Messenger line points to m.me/sb19atinfanboys.
 
-On the dashboard Sponsors tab, admins can change a status straight from the dropdown on each card, or tap Edit for the full record. Setting Emailed or Followed up stamps today's date in Last Contacted.
+On the dashboard Sponsors tab, admins can change a status straight from the dropdown on each card, or tap Edit for the full record. Setting Emailed, Messaged or Followed up stamps today's date in Last Contacted.
 
-Statuses: Not contacted, Emailed, Followed up, Replied, Confirmed, Received, Declined, No reply.
+Brands with no public email have their official Facebook page in the Facebook Page column (found October 22, 2026). Their cards show Facebook and Messenger links, plus Copy Messenger message and Open in Messenger, which copies a chat-sized version of the invitation and opens their Messenger so you only paste and send. A few brands have no confirmed page (KFC Philippines, Believe, UTA, Sony Music Publishing); their Contact Person note says what to do instead. "Pasalubong ng Bayan" was Dunkin's SB19 campaign, so it points to Dunkin'.
+
+Statuses: Not contacted, Emailed, Messaged, Followed up, Replied, Confirmed, Received, Declined, No reply.
 
 Money:
 

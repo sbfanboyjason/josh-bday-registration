@@ -6,6 +6,8 @@
  *     "Copy invitation" puts it on the clipboard; paste it into Gmail and
  *     the design and links come along.
  *   - body: a plain-text copy, used where rich copy is not available.
+ *   - messenger: a shorter plain-text message for Facebook Messenger, for
+ *     brands with no public email.
  *
  * {{BRAND}} is replaced with the sponsor's name. SPONSOR-EMAIL.md in the
  * repo has the plain-text letter for reference.
@@ -83,6 +85,51 @@ var SPONSOR_EMAIL = {
     S.benefits.forEach(function (b) { L.push('- ' + b); });
     L.push('', 'NEXT STEP', S.nextStep, '', S.thanks, '',
       'Sincerely,', 'SB19 A\'tin Fanboys', 'Mobile: ' + S.MOBILE, 'Email: ' + S.EMAIL, 'Messenger: ' + S.MESSENGER);
+    return L.join('\n');
+  },
+
+  /**
+   * Messenger version: plain text sized for a chat window. Short lines,
+   * emoji markers instead of headings (Messenger has no bold), every link
+   * written out so it turns clickable.
+   */
+  messenger: function () {
+    var S = SPONSOR_EMAIL;
+    var short = function (u) { return u.replace(/^https?:\/\/(www\.)?/, ''); };
+    var L = [
+      'Hi, Ninang {{BRAND}}! 👋',
+      '',
+      'We are SB19 A\'tin Fanboys, a community of SB19 supporters. We are organizing GAME TIME: The Never Growing Old SSOB\'s Birthday Celebration, a fan-organized party for Josh of SB19, and we would love to have {{BRAND}} as one of our Ninangs. 💖',
+      '',
+      '📅 Saturday, November 14, 2026, 5:00 PM onwards',
+      '📍 Teaspoon Cafe, 5B & 6A Juan Luna Street, Gagalangin, Tondo, Manila',
+      '👥 125 A\'TIN and BBQs, fanboys and fangirls',
+      '',
+      '⭐ OUR GUESTS',
+      'A\'TIN fan accounts with big followings, plus the P-pop groups MA1 and One South, who are SB19 fanboys themselves:',
+    ];
+    S.GUESTS.forEach(function (g) { L.push('• ' + g[0] + (g[2] ? ' (' + g[2] + ')' : '') + (g[1] ? ': ' + short(g[1]) : '')); });
+    L.push(
+      'We are happy to connect you with any of them if you would like to ask them directly.',
+      '',
+      '🎁 HOW YOU CAN BE OUR NINANG',
+      '• Cash sponsorship, our main request. Any amount you are comfortable with goes to the food, venue and program, and we will send you a short report of how it was used.',
+      '• Products: 125 or more pieces for our loot bags, or a few items as prizes for the game rounds.',
+      '• A mix of both is very welcome too.',
+      '',
+      '🙌 WHAT YOU GET AS OUR NINANG',
+      '• A "Thank you, Ninang" pubmat on our page, with your logo and your page tagged',
+      '• Your name or logo on our event registration page',
+      '• Shout-outs during the program, plus photos of fans with your items after the event',
+      '',
+      'If you would like to join, we would appreciate a reply here at your earliest convenience. For products, you can deliver them to us, or our team can pick them up from you, whichever works best for you. We can also send the full proposal by email.',
+      '',
+      'Thank you so much for considering this! 🙏',
+      '',
+      'SB19 A\'tin Fanboys',
+      'Mobile: ' + S.MOBILE,
+      'Email: ' + S.EMAIL
+    );
     return L.join('\n');
   },
 
@@ -169,6 +216,7 @@ var SPONSOR_EMAIL = {
       subject: SPONSOR_EMAIL.subject.replace(/\{\{BRAND\}\}/g, b),
       body: SPONSOR_EMAIL.plain().replace(/\{\{BRAND\}\}/g, b),
       html: SPONSOR_EMAIL.html().replace(/\{\{BRAND\}\}/g, escB),
+      messenger: SPONSOR_EMAIL.messenger().replace(/\{\{BRAND\}\}/g, b),
     };
   },
 };

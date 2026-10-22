@@ -46,8 +46,9 @@ const SPONSORS = {
     'Source',
     'Last Updated',
     'Updated By',
+    'Facebook Page', // added later, so it sits at the end and older columns keep their letters
   ],
-  STATUSES: ['Not contacted', 'Emailed', 'Followed up', 'Replied', 'Confirmed', 'Received', 'Declined', 'No reply'],
+  STATUSES: ['Not contacted', 'Emailed', 'Messaged', 'Followed up', 'Replied', 'Confirmed', 'Received', 'Declined', 'No reply'],
   // Statuses whose sponsors appear on the public page (if Show on Site = Yes).
   PUBLIC_STATUSES: ['Confirmed', 'Received'],
   OFFER_TYPES: ['Cash', 'Products', 'Food / Drinks', 'Freebies', 'Services', 'Mixed', 'TBD'],
@@ -88,6 +89,7 @@ const SPONSOR_FIELDS = {
   pubmat: 'Pubmat',
   notes: 'Notes',
   source: 'Source',
+  facebook: 'Facebook Page',
 };
 
 /**
@@ -122,7 +124,7 @@ const SPONSOR_SEED = [
   ['Selecta', 'Ice cream', 'SB19 endorsement', 'SB19 past partner', 'https://en.wikipedia.org/wiki/SB19'],
   ['CDO Idol', 'Hotdogs', 'SB19 endorsement; on the partner logo wall', 'SB19 past partner', 'https://en.wikipedia.org/wiki/SB19'],
   ['Mang Juan', 'Snacks', 'SB19 endorsement; on the partner logo wall', 'SB19 past partner', 'https://en.wikipedia.org/wiki/SB19'],
-  ['Pasalubong ng Bayan', 'Food gifts', 'Pasalubong ng Bayan x SB19 (Feb 2021)', 'SB19 past partner', 'https://bookingagentinfo.com/celebrity/sb19/endorsements/'],
+  ['Pasalubong ng Bayan', 'Food gifts', "Dunkin' campaign \"Pasalubong ng Bayan x SB19\" (Feb 2021), not a separate company", 'SB19 past partner', 'https://www.facebook.com/dunkin.ph/videos/pasalubong-ng-bayan-x-sb19-dunkin-theme-song-full-mv/110446104248194/'],
   // From the SB19 partner logo wall shared by the team (years not checked)
   ['TM (Globe)', 'Mobile network', 'On the SB19 partner logo wall', 'SB19 partner (logo wall)', 'Team screenshot'],
   ['Datu Puti', 'Condiments', 'On the SB19 partner logo wall', 'SB19 partner (logo wall)', 'Team screenshot'],
@@ -172,12 +174,55 @@ const SPONSOR_CONTACTS = {
   'KFC Philippines': ['', 'No public marketing email found. Message the KFC Philippines Facebook page', 'https://corporate.kfc.com.ph'],
 };
 
-/** Fills Email / Contact Person / Website on a row if they are blank. */
+/**
+ * Official Facebook pages, found October 22, 2026 by search (each is the
+ * brand's own page, not a branch or fan page). Use these to message brands
+ * with no public email. Messenger opens at m.me/<page>. Some brands (GCash,
+ * for example) say they do not answer page messages about support, but a
+ * sponsorship message to the page still reaches their social media team.
+ */
+const SPONSOR_FACEBOOK = {
+  'REDMI / Xiaomi Philippines': 'https://www.facebook.com/XiaomiPhilippines',
+  'Canva Philippines': 'https://www.facebook.com/CanvaPhilippines',
+  'Sony Philippines': 'https://www.facebook.com/SonyPhilippines',
+  'AIA Philippines': 'https://www.facebook.com/AIAPhilippines',
+  'GCash': 'https://www.facebook.com/gcashofficial',
+  'Puregold': 'https://www.facebook.com/Puregold.Mobile',
+  'Acer Philippines': 'https://www.facebook.com/AcerPH',
+  'IKEA Philippines': 'https://www.facebook.com/IKEAPhilippinesOfficial',
+  'Avignon Clinic': 'https://www.facebook.com/avignonclinic',
+  "Dunkin' Philippines": 'https://www.facebook.com/dunkin.ph',
+  'Pasalubong ng Bayan': 'https://www.facebook.com/dunkin.ph',
+  'Lazada Philippines': 'https://www.facebook.com/LazadaPhilippines',
+  'TM (Globe)': 'https://www.facebook.com/TMtambayan',
+  'Datu Puti': 'https://www.facebook.com/DatuPuti',
+  'Timezone Philippines': 'https://www.facebook.com/ilovetimezone',
+  'Fino Premium Touch': 'https://www.facebook.com/fino.philippines',
+  'Lunari Global': 'https://www.facebook.com/lunariglobal',
+  'Department of Tourism': 'https://www.facebook.com/DepartmentOfTourism',
+  'Sony Music Philippines': 'https://www.facebook.com/sonymusicphilippines',
+  'Universal Music Philippines': 'https://www.facebook.com/UMGPhilippines',
+  'Warner Chappell Music': 'https://www.facebook.com/wcmasiapac',
+};
+
+/** How to reach brands with no public email, shown in Contact Person when it is blank. */
+const SPONSOR_NO_EMAIL_NOTE = {
+  'Puregold': 'No public marketing email. Message the Puregold Mobile page, which Puregold calls its official Facebook page',
+  'Pasalubong ng Bayan': "This was Dunkin' Philippines' SB19 campaign. Contact Dunkin' instead",
+  'KFC Philippines': 'No public marketing email, and no Facebook link could be confirmed. Search "KFC Philippines" on Facebook and use the page with the blue check',
+  'Believe': 'No public email or Philippine Facebook page found. Use the contact form on believe.com',
+  'United Talent Agency (UTA)': 'No public email or Facebook page found. Use the contact page on unitedtalent.com',
+  'Sony Music Publishing': 'No public email or Philippine Facebook page found',
+};
+
+/** Fills Email / Contact Person / Website / Facebook Page on a row if they are blank. */
 function sponsorApplyContact_(row, name) {
-  const c = SPONSOR_CONTACTS[name];
-  if (!c) return false;
+  const c = SPONSOR_CONTACTS[name] || ['', '', ''];
+  const fb = SPONSOR_FACEBOOK[name] || '';
+  const person = c[1] || SPONSOR_NO_EMAIL_NOTE[name] || (fb && !c[0] ? 'No public email. Message their Facebook page' : '');
+  while (row.length < SPONSORS.HEADERS.length) row.push('');
   let changed = false;
-  [['Email', c[0]], ['Contact Person', c[1]], ['Website / Social', c[2]]].forEach(function (pair) {
+  [['Email', c[0]], ['Contact Person', person], ['Website / Social', c[2]], ['Facebook Page', fb]].forEach(function (pair) {
     const i = sponsorCol_(pair[0]);
     if (pair[1] && !String(row[i] || '').trim()) {
       row[i] = pair[1];
@@ -252,7 +297,13 @@ function loadSponsorSeed() {
 
 function loadSponsorSeed_(by) {
   const sheet = sponsorSheet_() || setupSponsorsSheet();
-  const data = sheet.getDataRange().getValues();
+  // Older sheets do not have the Facebook Page column yet: add the header.
+  const lastCol = sheet.getLastColumn();
+  if (lastCol < SPONSORS.HEADERS.length) {
+    sheet.getRange(1, 1, 1, SPONSORS.HEADERS.length).setValues([SPONSORS.HEADERS])
+      .setFontWeight('bold').setBackground('#111111').setFontColor('#ffffff');
+  }
+  const data = sheet.getRange(1, 1, Math.max(1, sheet.getLastRow()), SPONSORS.HEADERS.length).getValues();
   const have = {};
   const now = new Date();
   for (let i = 1; i < data.length; i++) {
@@ -366,6 +417,7 @@ function sponsorRecord_(row, staff) {
     notes: String(c('Notes') || ''),
     source: String(c('Source') || ''),
     website: String(c('Website / Social') || ''),
+    facebook: String(c('Facebook Page') || ''),
   };
   if (staff.role === 'Admin') {
     rec.contactPerson = String(c('Contact Person') || '');
@@ -409,6 +461,11 @@ function sponsorCleanValue_(field, value) {
     return new Date(s + 'T12:00:00+08:00');
   }
   if (field === 'logoUrl' && s && !/^https:\/\//i.test(s)) throw new Error('Logo link must start with https://');
+  if (field === 'facebook' && s) {
+    const fb = normalizeFacebook_(s);
+    if (!fb) throw new Error('Facebook page must be a facebook.com link, e.g. facebook.com/DatuPuti');
+    return fb;
+  }
   return sanitizeForSheet_(s);
 }
 
@@ -435,7 +492,7 @@ function dashSponsorSave_(req, staff) {
     const now = new Date();
 
     // Emailing someone for the first time stamps Last Contacted for you.
-    if (clean.status && ['Emailed', 'Followed up'].indexOf(clean.status) !== -1 && !('lastContacted' in clean)) {
+    if (clean.status && ['Emailed', 'Messaged', 'Followed up'].indexOf(clean.status) !== -1 && !('lastContacted' in clean)) {
       clean.lastContacted = now;
     }
 

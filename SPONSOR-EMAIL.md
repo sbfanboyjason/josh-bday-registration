@@ -1,6 +1,15 @@
 # Sponsor invitation
 
-On the dashboard, **Copy invitation** copies the themed letter (GAME TIME design, guest names linked to their Facebook pages). Paste it into the Gmail message body. **Write in Gmail** copies it the same way and opens a draft with the recipient and subject filled in, so you only paste. **Copy plain text** gives the version below, for Messenger or Facebook. To change the wording or the guest list, edit `dashboard/sponsor-email.js`.
+On the dashboard Sponsors tab, each card has:
+
+- **Copy invitation**: the themed GAME TIME letter for email (guest names linked to their Facebook pages). Paste it into the Gmail message body.
+- **Write in Gmail**: copies the themed letter and opens a draft with the recipient and subject filled in.
+- **Copy Messenger message**: the chat version below, for brands with no public email.
+- **Open in Messenger**: copies the chat version and opens the brand's Messenger (from the Facebook Page column).
+
+After you send, set the status to Emailed or Messaged. To change the wording or the guest list, edit `dashboard/sponsor-email.js`.
+
+## Email
 
 **Subject:** Be a Ninang of GAME TIME, SSOB's birthday celebration (Nov 14)
 
@@ -55,4 +64,47 @@ SB19 A'tin Fanboys
 Mobile: 0924 110 2340
 Email: sbfanboyjason@gmail.com
 Messenger: https://m.me/sb19atinfanboys
+```
+
+## Messenger
+
+```text
+Hi, Ninang [BRAND NAME]! 👋
+
+We are SB19 A'tin Fanboys, a community of SB19 supporters. We are organizing GAME TIME: The Never Growing Old SSOB's Birthday Celebration, a fan-organized party for Josh of SB19, and we would love to have [BRAND NAME] as one of our Ninangs. 💖
+
+📅 Saturday, November 14, 2026, 5:00 PM onwards
+📍 Teaspoon Cafe, 5B & 6A Juan Luna Street, Gagalangin, Tondo, Manila
+👥 125 A'TIN and BBQs, fanboys and fangirls
+
+⭐ OUR GUESTS
+A'TIN fan accounts with big followings, plus the P-pop groups MA1 and One South, who are SB19 fanboys themselves:
+• Ace Agoncillo: facebook.com/ace.agoncillo
+• Boy Panda: facebook.com/profile.php?id=100064733887177
+• Kielskie: facebook.com/KIELSKIE.ph
+• Rinacam: facebook.com/profile.php?id=61577886231195
+• Papawolf: facebook.com/PAPAmoWOLF
+• GentoBox: facebook.com/Gentobox01
+• Ma Ria: facebook.com/Aimyat1995
+• MA1 (P-pop group): facebook.com/profile.php?id=61577758042157
+• One South (P-pop group): facebook.com/onesouth24
+We are happy to connect you with any of them if you would like to ask them directly.
+
+🎁 HOW YOU CAN BE OUR NINANG
+• Cash sponsorship, our main request. Any amount you are comfortable with goes to the food, venue and program, and we will send you a short report of how it was used.
+• Products: 125 or more pieces for our loot bags, or a few items as prizes for the game rounds.
+• A mix of both is very welcome too.
+
+🙌 WHAT YOU GET AS OUR NINANG
+• A "Thank you, Ninang" pubmat on our page, with your logo and your page tagged
+• Your name or logo on our event registration page
+• Shout-outs during the program, plus photos of fans with your items after the event
+
+If you would like to join, we would appreciate a reply here at your earliest convenience. For products, you can deliver them to us, or our team can pick them up from you, whichever works best for you. We can also send the full proposal by email.
+
+Thank you so much for considering this! 🙏
+
+SB19 A'tin Fanboys
+Mobile: 0924 110 2340
+Email: sbfanboyjason@gmail.com
 ```

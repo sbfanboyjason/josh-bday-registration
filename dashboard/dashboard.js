@@ -530,7 +530,7 @@
 
   // ---------- sponsors ----------
   var SP_PILL = {
-    'Not contacted': 'pill-muted', Emailed: 'pill-pending', 'Followed up': 'pill-pending', Replied: 'pill-in',
+    'Not contacted': 'pill-muted', Emailed: 'pill-pending', Messaged: 'pill-pending', 'Followed up': 'pill-pending', Replied: 'pill-in',
     Confirmed: 'pill-ok', Received: 'pill-ok', Declined: 'pill-bad', 'No reply': 'pill-muted',
   };
 
@@ -656,11 +656,11 @@
       if (r.contactPerson) contactBits.push(r.contactPerson);
       if (r.email) contactBits.push(r.email);
       if (r.mobile) contactBits.push(r.mobile);
-      if (contactBits.length || r.website || r.source) {
+      if (contactBits.length || r.website || r.source || r.facebook) {
         var c = document.createElement('div');
         c.className = 'person-meta sp-tie';
         if (contactBits.length) c.appendChild(document.createTextNode(contactBits.join(' · ') + ' '));
-        [['site', r.website], ['source', r.source]].forEach(function (pair) {
+        [['Facebook', r.facebook], ['Messenger', messengerLink(r.facebook)], ['site', r.website], ['source', r.source]].forEach(function (pair) {
           if (!pair[1] || !/^https?:\/\//i.test(pair[1])) return;
           var a = document.createElement('a');
           a.href = pair[1];
@@ -690,9 +690,17 @@
               toast('Themed invitation for ' + r.name + ' copied. Paste it into the email body.');
             });
           }));
-          actions.appendChild(chip('Copy plain text', '', function () {
+          actions.appendChild(chip('Copy Messenger message', '', function () {
             var m = SPONSOR_EMAIL.forBrand(r.name);
-            copyText(m.body).then(function () { toast('Plain-text invitation copied (for Messenger or Facebook).'); });
+            copyText(m.messenger).then(function () { toast('Messenger message for ' + r.name + ' copied. Paste it into their chat.'); });
+          }));
+        }
+        if (messengerLink(r.facebook) && typeof SPONSOR_EMAIL !== 'undefined') {
+          actions.appendChild(chip('Open in Messenger', '', function () {
+            var m = SPONSOR_EMAIL.forBrand(r.name);
+            copyText(m.messenger);
+            window.open(messengerLink(r.facebook), '_blank', 'noopener');
+            toast('Messenger opened and the message is copied. Paste it into the chat and send. Then set the status to Messaged.', 9000);
           }));
         }
         if (r.email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(r.email) && typeof SPONSOR_EMAIL !== 'undefined') {
@@ -718,6 +726,16 @@
       }
       ul.appendChild(li);
     });
+  }
+
+  /** facebook.com/DatuPuti -> https://m.me/DatuPuti; profile.php?id=123 -> https://m.me/123 */
+  function messengerLink(fb) {
+    var v = String(fb || '').trim();
+    if (!v) return '';
+    var id = v.match(/profile\.php\?id=(\d+)/i);
+    if (id) return 'https://m.me/' + id[1];
+    var m = v.match(/^(?:https?:\/\/)?(?:(?:www|m|web)\.)?(?:facebook|fb)\.com\/([A-Za-z0-9.\-_]+)/i);
+    return m && ['people', 'pages', 'groups'].indexOf(m[1].toLowerCase()) === -1 ? 'https://m.me/' + m[1] : '';
   }
 
   function copyFallback(t) {
@@ -784,7 +802,7 @@
 
   var SP_INPUTS = {
     name: 'spName', status: 'spStatus', lastContacted: 'spLastContacted', category: 'spCategory', group: 'spGroup',
-    tieIn: 'spTieIn', contactPerson: 'spContact', email: 'spEmail', mobile: 'spMobile', website: 'spWebsite',
+    tieIn: 'spTieIn', contactPerson: 'spContact', email: 'spEmail', mobile: 'spMobile', website: 'spWebsite', facebook: 'spFacebook',
     offerType: 'spOfferType', offerDetails: 'spOfferDetails', cashPledged: 'spCashPledged', cashReceived: 'spCashReceived',
     itemValue: 'spItemValue', pubmat: 'spPubmat', showOnSite: 'spShow', logoUrl: 'spLogo', notes: 'spNotes',
   };
