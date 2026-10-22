@@ -17,7 +17,7 @@ var SPONSOR_EMAIL = {
   EMAIL: 'sbfanboyjason@gmail.com',
   MESSENGER: 'https://m.me/sb19atinfanboys',
   SITE: 'https://sbfanboyjason.github.io/josh-bday-registration/',
-  // Our Call for Sponsorship post on Facebook.
+  // Our public announcement that registration is open (Facebook reel).
   PUBMAT: 'https://www.facebook.com/reel/3585838684905015',
 
   // Guest names are not final yet, so the letter describes them in general
@@ -69,7 +69,7 @@ var SPONSOR_EMAIL = {
     S.intro.forEach(function (p) { L.push(p, ''); });
     L.push('EVENT DETAILS');
     S.details.forEach(function (d) { L.push(d[0] + ': ' + d[1]); });
-    L.push('', 'See our Call for Sponsorship post: ' + S.PUBMAT);
+    L.push('', 'Registration is now open. See our announcement: ' + S.PUBMAT);
     L.push('', 'OUR GUESTS', S.guestsIntro);
     S.GUESTS.forEach(function (g) { L.push('- ' + g[0] + (g[2] ? ' (' + g[2] + ')' : '') + (g[1] ? ': ' + g[1] : '')); });
     L.push('', 'HOW YOU CAN BE OUR NINANG', S.askIntro, '', S.productsIntro);
@@ -97,7 +97,7 @@ var SPONSOR_EMAIL = {
       '📅 Saturday, November 14, 2026, 5:00 PM onwards',
       '📍 Teaspoon Cafe, 5B & 6A Juan Luna Street, Gagalangin, Tondo, Manila',
       '👥 125 A\'TIN and BBQs, fanboys and fangirls',
-      '📣 Our Call for Sponsorship: ' + S.PUBMAT,
+      '📣 Registration is now open: ' + S.PUBMAT,
       '',
       '⭐ OUR GUESTS',
       S.guestsIntro,
@@ -175,7 +175,7 @@ var SPONSOR_EMAIL = {
       S.intro.map(function (p) { return '<p style="' + P + '">' + esc(p) + '</p>'; }).join('') +
       H('EVENT DETAILS') +
       box('<table role="presentation" cellpadding="0" cellspacing="0" border="0">' + details + '</table>') +
-      '<p style="' + P + 'margin-top:14px;">See our Call for Sponsorship post: ' + link(S.PUBMAT, 'watch on Facebook') + '</p>' +
+      '<p style="' + P + 'margin-top:14px;">Registration is now open. See our announcement: ' + link(S.PUBMAT, 'watch on Facebook') + '</p>' +
       H('OUR GUESTS') +
       '<p style="' + P + '">' + esc(S.guestsIntro) + '</p>' +
       (guests.length ? box(bullets(guests)) : '') +
