@@ -18,18 +18,9 @@ var SPONSOR_EMAIL = {
   MESSENGER: 'https://m.me/sb19atinfanboys',
   SITE: 'https://sbfanboyjason.github.io/josh-bday-registration/',
 
-  // Guests (big fan accounts and P-pop groups): [name, Facebook link, note].
-  GUESTS: [
-    ['Ace Agoncillo', 'https://www.facebook.com/ace.agoncillo'],
-    ['Boy Panda', 'https://www.facebook.com/profile.php?id=100064733887177'],
-    ['Kielskie', 'https://www.facebook.com/KIELSKIE.ph'],
-    ['Rinacam', 'https://www.facebook.com/profile.php?id=61577886231195'],
-    ['Papawolf', 'https://www.facebook.com/PAPAmoWOLF'],
-    ['GentoBox', 'https://www.facebook.com/Gentobox01'],
-    ['Ma Ria', 'https://www.facebook.com/Aimyat1995'],
-    ['MA1', 'https://www.facebook.com/profile.php?id=61577758042157', 'P-pop group'],
-    ['One South', 'https://www.facebook.com/onesouth24', 'P-pop group'],
-  ],
+  // Guest names are not final yet, so the letter describes them in general
+  // (guestsIntro below). To list names again, add [name, Facebook link, note].
+  GUESTS: [],
 
   subject: 'Be a Ninang of GAME TIME, SSOB\'s birthday celebration (Nov 14)',
 
@@ -48,8 +39,7 @@ var SPONSOR_EMAIL = {
     ['Organizer', 'SB19 A\'tin Fanboys'],
   ],
 
-  guestsIntro: 'These A\'TIN fan accounts with big followings will be with us and share the celebration with their audiences. Joining them are the P-pop groups MA1 and One South, who are SB19 fanboys themselves. Tap a name to open their Facebook page, and we are happy to connect you with any of them if you would like to ask them directly.',
-  guestsIntroPlain: 'These A\'TIN fan accounts with big followings will be with us and share the celebration with their audiences. Joining them are the P-pop groups MA1 and One South, who are SB19 fanboys themselves. Their Facebook pages are linked below so you can check them, and we are happy to connect you with any of them if you would like to ask them directly.',
+  guestsIntro: 'We are lining up special guests from big A\'TIN fan accounts and creators with strong social media reach. They will share the celebration with their followers, so our Ninangs are seen well beyond the room.',
 
   askIntro: 'Our main request is a cash sponsorship. It goes straight to the food, venue and program for the celebration, and any amount you are comfortable with makes a real difference. We keep a record of every peso and will gladly send {{BRAND}} a short report of how your support was used after the event.',
   productsIntro: 'If a cash sponsorship is not possible this time, we would be just as grateful for products:',
@@ -77,7 +67,7 @@ var SPONSOR_EMAIL = {
     S.intro.forEach(function (p) { L.push(p, ''); });
     L.push('EVENT DETAILS');
     S.details.forEach(function (d) { L.push(d[0] + ': ' + d[1]); });
-    L.push('', 'OUR GUESTS', S.guestsIntroPlain);
+    L.push('', 'OUR GUESTS', S.guestsIntro);
     S.GUESTS.forEach(function (g) { L.push('- ' + g[0] + (g[2] ? ' (' + g[2] + ')' : '') + (g[1] ? ': ' + g[1] : '')); });
     L.push('', 'HOW YOU CAN BE OUR NINANG', S.askIntro, '', S.productsIntro);
     S.products.forEach(function (p) { L.push('- ' + p[0] + ': ' + p[1]); });
@@ -106,11 +96,10 @@ var SPONSOR_EMAIL = {
       '👥 125 A\'TIN and BBQs, fanboys and fangirls',
       '',
       '⭐ OUR GUESTS',
-      'A\'TIN fan accounts with big followings, plus the P-pop groups MA1 and One South, who are SB19 fanboys themselves:',
+      S.guestsIntro,
     ];
     S.GUESTS.forEach(function (g) { L.push('• ' + g[0] + (g[2] ? ' (' + g[2] + ')' : '') + (g[1] ? ': ' + short(g[1]) : '')); });
     L.push(
-      'We are happy to connect you with any of them if you would like to ask them directly.',
       '',
       '🎁 HOW YOU CAN BE OUR NINANG',
       '• Cash sponsorship, our main request. Any amount you are comfortable with goes to the food, venue and program, and we will send you a short report of how it was used.',
@@ -185,7 +174,7 @@ var SPONSOR_EMAIL = {
       box('<table role="presentation" cellpadding="0" cellspacing="0" border="0">' + details + '</table>') +
       H('OUR GUESTS') +
       '<p style="' + P + '">' + esc(S.guestsIntro) + '</p>' +
-      box(bullets(guests)) +
+      (guests.length ? box(bullets(guests)) : '') +
       H('HOW YOU CAN BE OUR NINANG') +
       '<p style="' + P + '">' + esc(S.askIntro) + '</p>' +
       '<p style="' + P + '">' + esc(S.productsIntro) + '</p>' +
