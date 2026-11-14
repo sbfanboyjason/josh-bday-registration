@@ -27,6 +27,15 @@
   </form>
 </section>
 
+<!-- ============ PRINT LIST ============ -->
+<div id="printView" hidden>
+  <div class="print-bar">
+    <button type="button" class="btn btn-primary" id="printNowBtn">Print / Save as PDF</button>
+    <button type="button" class="link-btn" id="printCloseBtn">Close</button>
+  </div>
+  <div id="printBody"></div>
+</div>
+
 <!-- ============ APP ============ -->
 <div id="appView" hidden>
   <header class="topbar">
@@ -35,6 +44,7 @@
       <div class="topbar-sub" id="whoAmI"></div>
     </div>
     <div class="topbar-actions">
+      <button type="button" class="link-btn" id="printBtn">Print list</button>
       <button type="button" class="icon-btn" id="refreshBtn" aria-label="Refresh">↻</button>
       <button type="button" class="link-btn" id="logoutBtn">Sign out</button>
     </div>

@@ -300,6 +300,47 @@
     renderList();
   }
 
+  // ---------- printable list (approved + free passes) ----------
+  function esc(t) { return String(t == null ? '' : t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+  function openPrintList() {
+    var btn = $('printBtn');
+    btn.disabled = true;
+    btn.textContent = 'Loading…';
+    var types = ['Registrant', 'Guest', 'Admin', 'Volunteer'];
+    Promise.all(types.map(function (t) { return dash('list', { type: t }); })).then(function (results) {
+      btn.disabled = false;
+      btn.textContent = 'Print list';
+      var rows = [];
+      for (var i = 0; i < results.length; i++) {
+        var res = results[i];
+        if (!res.ok) { if (res.code !== 'AUTH') showError(res.error || 'Could not load the list.'); return; }
+        res.rows.forEach(function (r) { if (r.status === 'Approved') rows.push(r); });
+      }
+      rows.sort(function (a, b) {
+        return (a.lastName + ' ' + a.firstName).toLowerCase().localeCompare((b.lastName + ' ' + b.firstName).toLowerCase());
+      });
+      var heads = 0;
+      var body = rows.map(function (r, idx) {
+        var q = Number(r.qty) || 1;
+        heads += q;
+        var name = r.lastName ? (r.lastName + ', ' + r.firstName) : r.name;
+        return '<tr><td class="num">' + (idx + 1) + '</td><td>' + esc(name) + '</td><td>' + esc(r.type === 'Registrant' ? 'Paid' : r.type) +
+          '</td><td class="num">' + q + '</td><td>' + esc(r.regId) + '</td><td class="num">' + (r.checkedIn ? '✓' : '') + '</td><td class="box"></td></tr>';
+      }).join('');
+      var now = new Date().toLocaleString('en-PH', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+      $('printBody').innerHTML = '<h1>GAME TIME: Attendee List</h1>' +
+        '<div class="print-meta">Approved registrants and free passes, by last name. ' + rows.length + ' entries, ' + heads + ' heads. Printed ' + esc(now) + '.</div>' +
+        '<table><thead><tr><th class="num">#</th><th>Name</th><th>Pass</th><th class="num">Qty</th><th>Reg. ID</th><th class="num">In</th><th>Door</th></tr></thead><tbody>' +
+        (body || '<tr><td colspan="7">No approved entries yet.</td></tr>') + '</tbody></table>';
+      $('printView').hidden = false;
+      window.scrollTo(0, 0);
+    }).catch(function () {
+      btn.disabled = false;
+      btn.textContent = 'Print list';
+      showError('Network error. Please try again.');
+    });
+  }
+
   function loadList(type) {
     $('listSummary').textContent = listCache[type] ? '' : 'Loading…';
     return dash('list', { type: type }).then(function (res) {
@@ -1106,6 +1147,9 @@
     setupModals();
     setupSponsors();
     $('refreshBtn').addEventListener('click', refresh);
+    $('printBtn').addEventListener('click', openPrintList);
+    $('printNowBtn').addEventListener('click', function () { window.print(); });
+    $('printCloseBtn').addEventListener('click', function () { $('printView').hidden = true; });
     $('listSearch').addEventListener('input', renderList);
     $('showCancelled').addEventListener('change', renderList);
 

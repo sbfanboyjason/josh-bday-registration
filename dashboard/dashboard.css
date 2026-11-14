@@ -252,3 +252,21 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: var(--p
   width: 130px; min-height: 36px; padding: 6px 10px; border-radius: 8px; border: 1px solid var(--line);
   background: transparent; color: var(--text); font: inherit; font-size: 16px;
 }
+
+/* ---------- Printable attendee list ---------- */
+#printView { position: fixed; inset: 0; z-index: 9999; overflow: auto; background: #fff; color: #111; padding: 16px; }
+#printView .print-bar { display: flex; gap: 12px; align-items: center; margin-bottom: 14px; }
+#printView .print-bar .link-btn { color: #333; }
+#printBody h1 { font-size: 18px; margin: 0 0 2px; color: #111; }
+#printBody .print-meta { font-size: 12px; color: #444; margin-bottom: 10px; }
+#printBody table { width: 100%; border-collapse: collapse; font-size: 12px; }
+#printBody th, #printBody td { border: 1px solid #999; padding: 5px 6px; text-align: left; vertical-align: top; color: #111; }
+#printBody th { background: #eee; }
+#printBody td.num, #printBody th.num { text-align: center; white-space: nowrap; }
+#printBody td.box { width: 34px; }
+@media print {
+  body > *:not(#printView) { display: none !important; }
+  #printView { position: static; overflow: visible; padding: 0; }
+  #printView .print-bar { display: none; }
+  #printBody tr { break-inside: avoid; }
+}
