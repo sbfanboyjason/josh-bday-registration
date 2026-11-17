@@ -45,7 +45,7 @@ const FEEDBACK = {
 
   // Links used in the email and on the page. Swap them here if they change.
   TEASPOON_REVIEW_URL: 'https://share.google/zFc50jDKMRlpKhQuC',
-  EXAMPLE_REVIEW_URL: '', // link to our own posted review; leave '' to hide the link
+  EXAMPLE_REVIEW_URL: 'https://share.google/MZOK4QBDzJOia7CnG', // our own posted review; '' hides the link
   DEADLINE_DISPLAY: 'November 30, 2026',
   PRIZE: 'SB19 merch',
 };

@@ -5,7 +5,7 @@
 (function () {
   var cfg = EVENT_CONFIG;
   // Link to our own posted Google review. Leave '' to hide the link.
-  var EXAMPLE_REVIEW_URL = '';
+  var EXAMPLE_REVIEW_URL = 'https://share.google/MZOK4QBDzJOia7CnG';
   var shot = { b64: '', name: '' };
 
   function $(id) { return document.getElementById(id); }
