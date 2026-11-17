@@ -54,7 +54,7 @@
       html = '<p>Your raffle number is</p><p class="raffle-no">' + esc(d.raffleNo) + '</p>' +
         '<p>' + (d.duplicate ? 'You already joined the raffle with this email.' :
         'We emailed it to ' + esc(v.email) + ' too.') + ' Our team checks each review screenshot before the draw. ' +
-        'Winners will be announced on our <a href="https://www.facebook.com/sb19atinfanboys" target="_blank" rel="noopener">Facebook page</a>.</p>';
+        'We will contact the winners by email.</p>';
     } else {
       html = '<p>' + (d.duplicate ? 'We already have your feedback. Thank you!' : 'We got your feedback. Thank you!') + '</p>' +
         '<p>To join the raffle, review Teaspoon Cafe Juan Luna on Google, then send this form again with the same email and your review screenshot.</p>';
