@@ -414,6 +414,7 @@ function onOpen() {
     .addItem('Set Up Feedback Sheet (survey + raffle)', 'setupFeedbackSheet')
     .addItem('Send Feedback Email Test (to me)', 'sendFeedbackTestEmail')
     .addItem('Send Feedback Emails Now (next batch)', 'sendFeedbackEmailsNow')
+    .addItem('Refresh Feedback Email Status', 'refreshFeedbackEmailStatus')
     .addSeparator()
     .addItem('Run Backup Now', 'runBackupNow')
     .addToUi();

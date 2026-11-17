@@ -42,6 +42,7 @@ const FEEDBACK = {
   EMAILS_PER_RUN: 20,
   QUOTA_FLOOR: 5,
   SENT_PROP: 'feedbackEmailed',
+  STATUS_SHEET: 'Feedback Emails',
 
   // Links used in the email and on the page. Swap them here if they change.
   TEASPOON_REVIEW_URL: 'https://share.google/zFc50jDKMRlpKhQuC',
@@ -361,7 +362,91 @@ function sendFeedbackEmailsBatch_() {
     }
   }
   PropertiesService.getScriptProperties().setProperty(FEEDBACK.SENT_PROP, JSON.stringify(sent));
+  // Rebuild the status tab only when something changed (new email sent or new survey answer).
+  const props = PropertiesService.getScriptProperties();
+  const sig = Object.keys(sent).length + '|' + Object.keys(answered).length + '|' + todo.length;
+  if (props.getProperty('feedbackStatusSig') !== sig) {
+    try {
+      refreshFeedbackEmailStatus_();
+      props.setProperty('feedbackStatusSig', sig);
+    } catch (err) { console.error('refreshFeedbackEmailStatus_: ' + err.message); }
+  }
   return { sent: count, left: todo.length - count };
+}
+
+/**
+ * Writes the "Feedback Emails" tab (one row per attendee: sent or not,
+ * answered or not, raffle number) and a one-line count in _Config, so the
+ * team can see progress from the Sheet, also on a phone.
+ */
+function refreshFeedbackEmailStatus_() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sent = feedbackSentSet_();
+  const answers = {};
+  const fb = feedbackSheet_();
+  if (fb) {
+    const d = fb.getDataRange().getValues();
+    for (let i = 1; i < d.length; i++) {
+      answers[String(d[i][feedbackCol_('Email')]).toLowerCase()] = String(d[i][feedbackCol_('Raffle No.')] || '');
+    }
+  }
+  const tz = (typeof CHECKIN !== 'undefined' && CHECKIN.TZ) || 'Asia/Manila';
+  const list = feedbackAttendees_();
+  let nSent = 0;
+  let nAnswered = 0;
+  let nRaffle = 0;
+  const rows = list.map(function (a) {
+    const k = a.email.toLowerCase();
+    const answered = Object.prototype.hasOwnProperty.call(answers, k);
+    let status;
+    if (sent[k]) {
+      nSent++;
+      status = 'Sent ' + Utilities.formatDate(new Date(sent[k]), tz, 'MMM d, h:mm a');
+    } else if (answered) {
+      status = 'Not needed (already answered)';
+    } else {
+      status = 'Waiting';
+    }
+    if (answered) nAnswered++;
+    if (answered && answers[k]) nRaffle++;
+    return [a.regId, a.full || a.first, a.email, status, answered ? 'Yes' : 'No', answered ? answers[k] : ''];
+  });
+  const done = nSent + list.filter(function (a) { return !sent[a.email.toLowerCase()] && Object.prototype.hasOwnProperty.call(answers, a.email.toLowerCase()); }).length;
+  const summary = 'Emails sent: ' + nSent + ' · Waiting: ' + (list.length - done) + ' · Survey answers: ' + nAnswered +
+    ' · Raffle entries: ' + nRaffle + ' · Attendees: ' + list.length;
+
+  let sh = ss.getSheetByName(FEEDBACK.STATUS_SHEET);
+  if (!sh) sh = ss.insertSheet(FEEDBACK.STATUS_SHEET);
+  sh.clear();
+  sh.getRange(1, 1).setValue(summary).setFontWeight('bold');
+  sh.getRange(2, 1).setValue('Updated ' + Utilities.formatDate(new Date(), tz, 'MMM d, h:mm a') +
+    '. Refreshes after each batch, or use Josh Birthday Admin > Refresh Feedback Email Status.').setFontColor('#666666');
+  const head = ['Registration ID', 'Name', 'Email', 'Feedback Email', 'Answered Survey', 'Raffle No.'];
+  sh.getRange(4, 1, 1, head.length).setValues([head]).setFontWeight('bold').setBackground('#111111').setFontColor('#ffffff');
+  if (rows.length) sh.getRange(5, 1, rows.length, head.length).setValues(rows);
+  sh.setFrozenRows(4);
+  try { sh.setTabColor('#2b95ff'); sh.autoResizeColumns(1, head.length); } catch (e) { /* ok */ }
+
+  // One line in _Config, below the switches.
+  const cfg = ss.getSheetByName(CONFIG.CONFIG_SHEET_NAME);
+  if (cfg) {
+    const v = cfg.getDataRange().getValues();
+    let r = -1;
+    for (let i = 0; i < v.length; i++) if (String(v[i][0]).trim() === 'Feedback Emails Sent') r = i + 1;
+    if (r === -1) r = v.length + 1;
+    cfg.getRange(r, 1, 1, 3).setValues([['Feedback Emails Sent', nSent + ' of ' + list.length,
+      'Updated automatically. Details in the "' + FEEDBACK.STATUS_SHEET + '" tab.']]);
+  }
+  return { sent: nSent, total: list.length, answered: nAnswered, raffle: nRaffle };
+}
+
+/** Menu: rebuilds the Feedback Emails tab now. */
+function refreshFeedbackEmailStatus() {
+  const r = refreshFeedbackEmailStatus_();
+  try {
+    SpreadsheetApp.getUi().alert('Feedback emails sent: ' + r.sent + ' of ' + r.total + '.\nSurvey answers: ' + r.answered +
+      '. Raffle entries: ' + r.raffle + '.\n\nSee the "' + FEEDBACK.STATUS_SHEET + '" tab for each attendee.');
+  } catch (e) { /* editor */ }
 }
 
 /** From the every-minute trigger. */
