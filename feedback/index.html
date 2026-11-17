@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Feedback and Raffle · GAME TIME: SSOB's Birthday Celebration</title>
+<meta name="description" content="Thank you for celebrating GAME TIME with us. Answer our short survey and review Teaspoon Cafe Juan Luna to join the SB19 merch raffle." />
+<meta name="robots" content="noindex" />
+<meta property="og:type" content="website" />
+<meta property="og:title" content="GAME TIME: Feedback and Raffle" />
+<meta property="og:description" content="Answer our short survey and review Teaspoon Cafe Juan Luna to join the SB19 merch raffle." />
+<meta property="og:image" content="https://sbfanboyjason.github.io/josh-bday-registration/assets/ninang-share.jpg" />
+<link rel="icon" type="image/png" href="../assets/favicon.png" />
+<link rel="icon" href="../assets/favicon.ico" sizes="any" />
+<link rel="apple-touch-icon" href="../assets/apple-touch-icon.png" />
+<link rel="stylesheet" href="../assets/styles.css" />
+<link rel="stylesheet" href="../ninang/ninang.css" />
+<link rel="stylesheet" href="../shared/credit-footer.css" />
+<style>
+  .rating-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+  .rating-row .choice { justify-content: center; font-size: 1rem; padding: 0; }
+  .rating-scale { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-dim); margin-top: 6px; }
+  .raffle-box { border: 1px solid var(--gold); background: rgba(255, 79, 154, 0.1); border-radius: 12px; padding: 14px 16px; margin: 0 0 6px; line-height: 1.55; }
+  .raffle-box strong { color: var(--gold-soft); }
+  .steps { margin: 0 0 12px; padding-left: 1.2rem; line-height: 1.6; }
+  .steps li { margin-bottom: 6px; }
+  .example-shot { display: block; width: 100%; max-width: 300px; margin: 6px auto 4px; border-radius: 10px; border: 1px solid var(--border); }
+  .example-caption { text-align: center; font-size: 0.78rem; color: var(--text-dim); margin: 0 0 14px; }
+  .review-btn { display: block; text-align: center; text-decoration: none; margin: 4px 0 16px; }
+  .raffle-no { font-family: 'VT323', ui-monospace, monospace; font-size: 2.2rem; color: var(--gold-soft); letter-spacing: 0.06em; }
+</style>
+</head>
+<body>
+<main>
+  <div class="wrap">
+
+    <div class="hero">
+      <img class="hero-banner" src="../assets/hero.jpg" width="1200" height="982"
+           alt="GAME TIME: The Never Growing Old SSOB's Birthday Celebration, November 14, 2026" />
+      <h1 class="ninang-title">Salamat, A'TIN!</h1>
+      <p class="ninang-lead">Thank you for celebrating SSOB's birthday with us. Tell us how the night went, and join the SB19 merch raffle.</p>
+    </div>
+
+    <div class="raffle-box">
+      <strong>How to join the raffle</strong><br>
+      1. Answer this survey.<br>
+      2. Review Teaspoon Cafe Juan Luna on Google and upload a screenshot of your posted review below.<br>
+      Do both by <strong id="deadline">November 30, 2026</strong> and you get one raffle entry. One entry per attendee.
+    </div>
+
+    <div class="status-banner" id="statusBanner"></div>
+
+    <form id="feedbackForm" novalidate>
+      <div style="position:absolute; left:-9999px; top:-9999px;" aria-hidden="true">
+        <label for="website">Leave this field blank</label>
+        <input type="text" id="website" name="website" tabindex="-1" autocomplete="off" />
+      </div>
+      <input type="hidden" id="regId" />
+
+      <div class="card">
+        <h2>About you</h2>
+        <div class="field" id="field-name">
+          <label for="name">Your Name</label>
+          <input type="text" id="name" autocomplete="name" maxlength="120" required />
+          <div class="error">Please enter your name.</div>
+        </div>
+        <div class="field" id="field-email">
+          <label for="email">Email Address</label>
+          <input type="email" id="email" autocomplete="email" required />
+          <div class="hint">Use the email you registered with, so we can match your raffle entry to your ticket.</div>
+          <div class="error">Please enter a valid email address.</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>How was GAME TIME?</h2>
+        <fieldset class="field" id="field-rating">
+          <legend>Overall, how would you rate the event?</legend>
+          <div class="rating-row">
+            <label class="choice"><input type="radio" name="rating" value="1" /><span>1</span></label>
+            <label class="choice"><input type="radio" name="rating" value="2" /><span>2</span></label>
+            <label class="choice"><input type="radio" name="rating" value="3" /><span>3</span></label>
+            <label class="choice"><input type="radio" name="rating" value="4" /><span>4</span></label>
+            <label class="choice"><input type="radio" name="rating" value="5" /><span>5</span></label>
+          </div>
+          <div class="rating-scale"><span>Needs work</span><span>Loved it</span></div>
+          <div class="error">Please pick a rating.</div>
+        </fieldset>
+        <div class="field">
+          <label for="enjoyed">What did you enjoy most? <span class="hint-inline">(optional)</span></label>
+          <textarea id="enjoyed" rows="3" maxlength="1000" placeholder="The games, the food, meeting other A'TIN…"></textarea>
+        </div>
+        <div class="field">
+          <label for="better">What could we do better? <span class="hint-inline">(optional)</span></label>
+          <textarea id="better" rows="3" maxlength="1000" placeholder="Be honest, it helps us plan the next one."></textarea>
+        </div>
+        <fieldset class="field" id="field-join">
+          <legend>Would you join our next event?</legend>
+          <div class="choice-row choice-3">
+            <label class="choice"><input type="radio" name="join" value="Yes" /><span>Yes</span></label>
+            <label class="choice"><input type="radio" name="join" value="Maybe" /><span>Maybe</span></label>
+            <label class="choice"><input type="radio" name="join" value="No" /><span>No</span></label>
+          </div>
+          <div class="error">Please choose one.</div>
+        </fieldset>
+        <div class="field">
+          <label for="ideas">Ideas for our next event <span class="hint-inline">(optional)</span></label>
+          <textarea id="ideas" rows="2" maxlength="1000" placeholder="A venue, a game, a theme…"></textarea>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Review Teaspoon Cafe Juan Luna</h2>
+        <p class="hint">Teaspoon hosted all of us for the night. Share your own honest experience of the place, the food and the staff on Google.</p>
+        <ol class="steps">
+          <li>Tap the button below to open Teaspoon Cafe Juan Luna on Google.</li>
+          <li>Tap <strong>Reviews</strong>, then <strong>Write a review</strong>, and post it.</li>
+          <li>Take a screenshot of your posted review and upload it here.</li>
+        </ol>
+        <a class="btn btn-secondary review-btn" id="reviewLink" href="https://share.google/zFc50jDKMRlpKhQuC" target="_blank" rel="noopener">Review Teaspoon on Google</a>
+        <p class="hint" style="margin-bottom:4px">Not sure what to write? Here is the review we posted, as an example.</p>
+        <img class="example-shot" src="review-example.jpg" alt="Example: our Google review of Teaspoon Cafe Juan Luna" width="394" height="981" loading="lazy" />
+        <p class="example-caption" id="exampleCaption">Our review, as an example</p>
+
+        <div class="field" id="field-reviewName">
+          <label for="reviewName">Name shown on your Google review</label>
+          <input type="text" id="reviewName" maxlength="120" placeholder="So we can find your review" />
+          <div class="error">Please enter the name shown on your Google review.</div>
+        </div>
+        <div class="field" id="field-screenshot">
+          <label>Screenshot of your posted review</label>
+          <div class="upload-box" id="uploadBox">
+            <span id="uploadBoxText">Tap to upload your review screenshot (max <span class="maxMb"></span>MB)</span>
+            <input type="file" id="screenshotInput" accept="image/*" style="display:none" />
+          </div>
+          <img id="uploadPreview" class="upload-preview" alt="Review screenshot preview" />
+          <div class="hint">You can send the survey without it, but there is no raffle entry without a review screenshot.</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <details class="dpa-details">
+          <summary>Data Privacy Notice</summary>
+          <div class="consent-box">
+            <p>By sending this form, you allow the organizers of GAME TIME to collect and use your name, email, survey
+            answers, the name on your Google review and your review screenshot, only to improve our events, check raffle
+            entries, and contact raffle winners.</p>
+            <p>We do not sell or share your details. We keep this information until the raffle is drawn and the prizes
+            are claimed, then delete it.</p>
+            <p>Under the Data Privacy Act of 2012 (RA 10173), you can ask to see, correct or delete your data, or file a
+            complaint with the National Privacy Commission. Email sbfanboyjason@gmail.com for any privacy concern.</p>
+          </div>
+        </details>
+        <label class="checkbox-row" id="field-dpa">
+          <input type="checkbox" id="dpaCheckbox" />
+          <span>I have read the Data Privacy Notice and agree to it.</span>
+        </label>
+      </div>
+
+      <button type="submit" class="btn btn-primary" id="submitBtn">Send My Feedback</button>
+    </form>
+
+    <div id="successPanel" class="card success-card" style="display:none">
+      <h2>Salamat po! 💖</h2>
+      <div id="successBody"></div>
+    </div>
+
+    <section class="faq" aria-labelledby="faqTitle">
+      <h2 id="faqTitle">Questions</h2>
+      <details class="faq-item"><summary>Who can join the raffle?</summary><div class="faq-answer"><p>Everyone who attended GAME TIME on November 14, paid or with a free pass. One entry per attendee.</p></div></details>
+      <details class="faq-item"><summary>I already sent the survey without a screenshot. Can I still join?</summary><div class="faq-answer"><p>Yes. Fill in the form again with the same email and add your review screenshot. We add the raffle entry to your first answer.</p></div></details>
+      <details class="faq-item"><summary>When is the draw?</summary><div class="faq-answer"><p>After the deadline. We will announce the winners on our <a href="https://www.facebook.com/sb19atinfanboys" target="_blank" rel="noopener">Facebook page</a>.</p></div></details>
+      <details class="faq-item"><summary>Who do I contact?</summary><div class="faq-answer"><p>Email <a href="mailto:sbfanboyjason@gmail.com">sbfanboyjason@gmail.com</a> or message <a href="https://m.me/sb19atinfanboys" target="_blank" rel="noopener">our Facebook page</a>.</p></div></details>
+    </section>
+  </div>
+</main>
+
+<script src="../assets/config.js"></script>
+<script src="feedback.js"></script>
+<script src="../shared/credit-footer.js"></script>
+</body>
+</html>

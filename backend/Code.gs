@@ -241,6 +241,8 @@ const SWITCHES = [
   ['Registration Open', 'Yes', 'Type No to close the public form right away (people see "Registration is closed"). Yes to reopen.'],
   ['Ninang Pledges Open', 'Yes', 'Type No to close the Be a Ninang form. The Ninang wall stays up. Yes to reopen.'],
   ['Brand Ninang Pledges Open', 'Yes', 'Type No to close the Brand Ninang form for companies. Yes to reopen.'],
+  ['Feedback Form Open', 'Yes', 'Type No to close the after-event survey and raffle. Yes to reopen.'],
+  ['Send Feedback Emails', 'No', 'Type Yes to send the thank-you + survey email to every approved attendee, in batches within the daily Gmail limit. No to pause.'],
 ];
 
 function getSwitch_(key) {
@@ -408,6 +410,10 @@ function onOpen() {
     .addSeparator()
     .addItem('Set Up Ninangs Sheet (individual Ninangs)', 'setupNinangsSheet')
     .addItem('Send Waiting Ninang Emails Now', 'sendNinangEmailsNow')
+    .addSeparator()
+    .addItem('Set Up Feedback Sheet (survey + raffle)', 'setupFeedbackSheet')
+    .addItem('Send Feedback Email Test (to me)', 'sendFeedbackTestEmail')
+    .addItem('Send Feedback Emails Now (next batch)', 'sendFeedbackEmailsNow')
     .addSeparator()
     .addItem('Run Backup Now', 'runBackupNow')
     .addToUi();
@@ -592,6 +598,7 @@ function doGet(e) {
  * POST <web-app-url>?action=dash      → team dashboard (Dashboard.gs)
  * POST <web-app-url>?action=ninang    → Be a Ninang pledge (Ninangs.gs)
  * POST <web-app-url>?action=brandNinang → Brand Ninang pledge (Sponsors.gs)
+ * POST <web-app-url>?action=feedback  → after-event survey + raffle (Feedback.gs)
  *
  * Content-Type must be text/plain on the client side to avoid a CORS
  * preflight — see script.js / correct.js comments.
@@ -612,6 +619,9 @@ function doPost(e) {
   }
   if (action === 'brandNinang') {
     return handleBrandNinang_(e); // Brand Ninang form, see Sponsors.gs
+  }
+  if (action === 'feedback') {
+    return handleFeedback_(e); // after-event survey + raffle, see Feedback.gs
   }
   return handleNewRegistration(e);
 }
@@ -1189,6 +1199,11 @@ function processConfirmedStatusChanges() {
     if (typeof sendNinangStatusEmails_ === 'function') sendNinangStatusEmails_();
   } catch (err) {
     console.error('sendNinangStatusEmails_ error: ' + err.message);
+  }
+  try {
+    if (typeof sendFeedbackEmailsIfOn_ === 'function') sendFeedbackEmailsIfOn_();
+  } catch (err) {
+    console.error('sendFeedbackEmailsIfOn_ error: ' + err.message);
   }
 
   const props = PropertiesService.getScriptProperties();
