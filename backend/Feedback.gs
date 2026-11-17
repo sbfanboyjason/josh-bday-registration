@@ -253,7 +253,7 @@ function feedbackThanks_(p, raffleNo) {
       '<p>Thank you for answering our survey and for reviewing Teaspoon Cafe Juan Luna! You are in the ' +
       escapeHtml_(FEEDBACK.PRIZE) + ' raffle.</p>' +
       infoBox_(infoRow_('Raffle No.', '<strong>' + escapeHtml_(raffleNo) + '</strong>')) +
-      '<p>Our team checks each review screenshot before the draw. If you win, we will contact you at this email address. Keep this number handy.</p>' +
+      '<p>Our team checks each review screenshot before the draw. If you win, we will contact you through the email, mobile number or Facebook account you gave us when you registered. Keep this number handy.</p>' +
       '<p>Salamat po!</p>';
     const shell = buildEmailShell_({ pillLabel: 'Raffle Entry', pillColor: '#ff6fae', pillTextColor: '#0a0a0a', bodyHtml: bodyHtml });
     MailApp.sendEmail({
@@ -261,7 +261,7 @@ function feedbackThanks_(p, raffleNo) {
       subject: '[GAME TIME] You are in the raffle! (' + raffleNo + ')',
       htmlBody: shell.html,
       body: 'Hi ' + first + ',\n\nThank you for answering our survey and reviewing Teaspoon Cafe Juan Luna. ' +
-        'Your raffle number is ' + raffleNo + '. If you win, we will contact you at this email address.\n\n' + CONFIG.SENDER_DISPLAY_NAME,
+        'Your raffle number is ' + raffleNo + '. If you win, we will contact you through the email, mobile number or Facebook account you gave us when you registered.\n\n' + CONFIG.SENDER_DISPLAY_NAME,
       name: CONFIG.SENDER_DISPLAY_NAME,
       inlineImages: shell.inlineImages,
     });
@@ -299,7 +299,7 @@ function feedbackEmailParts_(a) {
     warningBox_(
       '<strong>Raffle details</strong><br>' +
       'Send your survey and review screenshot by <strong>' + escapeHtml_(FEEDBACK.DEADLINE_DISPLAY) + '</strong>. ' +
-      'One entry per attendee. We will contact the winners by email.'
+      'One entry per attendee. We will contact the winners through the email, mobile number or Facebook account they gave us when they registered.'
     ) +
     '<p>Salamat po, and see you at the next one!</p>';
   const text =
@@ -309,7 +309,7 @@ function feedbackEmailParts_(a) {
     '1. Answer our feedback survey (about 3 minutes): ' + link + '\n' +
     '2. Review Teaspoon Cafe Juan Luna on Google with your honest experience: ' + FEEDBACK.TEASPOON_REVIEW_URL + '\n' +
     '   Then upload a screenshot of your posted review in the survey.\n\n' +
-    'Deadline: ' + FEEDBACK.DEADLINE_DISPLAY + '. One entry per attendee. We will contact the winners by email.\n\n' +
+    'Deadline: ' + FEEDBACK.DEADLINE_DISPLAY + '. One entry per attendee. We will contact the winners through the email, mobile number or Facebook account they gave us when they registered.\n\n' +
     CONFIG.SENDER_DISPLAY_NAME;
   return { html: bodyHtml, text: text };
 }
